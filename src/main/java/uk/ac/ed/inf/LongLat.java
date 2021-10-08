@@ -4,11 +4,20 @@ public class LongLat {
     public double longitude;
     public double latitude;
 
+    /**
+     *
+     * @param longitude
+     * @param latitude
+     */
     LongLat(double longitude,double latitude){
         this.longitude = longitude;
         this.latitude = latitude;
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isConfined(){
         double confAreaRight = -3.184319;
         double confAreaLeft = -3.192473;
@@ -17,16 +26,32 @@ public class LongLat {
         return ((longitude< confAreaRight && longitude> confAreaLeft) && (latitude< confAreaTop && latitude> confAreaBottom));
     }
 
+    /**
+     *
+     * @param l1
+     * @param l2
+     * @return
+     */
     public static double distanceTo(LongLat l1,LongLat l2){
         return Math.sqrt(Math.pow((l1.latitude-l2.latitude),2)+Math.pow((l1.longitude-l1.longitude),2));
 
     }
 
+    /**
+     *
+     * @param l1
+     * @return
+     */
     public boolean closeTo(LongLat l1){
         LongLat l2 = new LongLat(longitude,latitude);
         return distanceTo(l1,l2)<0.00015;
     }
 
+    /**
+     *
+     * @param angle
+     * @return
+     */
     public LongLat nextPosition(int angle){
         final double dist = 0.00015;
         if(angle==0){

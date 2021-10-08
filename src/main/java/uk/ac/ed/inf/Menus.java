@@ -8,7 +8,7 @@ public class Menus {
         this.name = name;
         this.port = port;
     }
-    public static int  getDeliveryCost(){
-
+    public static int  getDeliveryCost(String ... items){
+        return 1;
     }
 }

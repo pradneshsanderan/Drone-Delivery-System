@@ -27,30 +27,46 @@ public class LongLat {
         return distanceTo(l1,l2)<0.00015;
     }
 
-    LongLat nextPosition(int angle){
+    public LongLat nextPosition(int angle){
+        final double dist = 0.00015;
         if(angle==0){
             return new LongLat(longitude+0.00015,latitude);
         }
         else if(angle<90){
-            double xPosition = 
+            double radians = Math.toRadians(angle);
+            double xMoved = dist * Math.cos(radians);
+            double yMoved = dist * Math.sin(radians);
+            return new LongLat(longitude+xMoved,latitude+yMoved);
         }
         else if(angle ==90){
             return new LongLat(longitude,latitude+0.00015);
         }
         else if(angle<180){
-
+            angle = angle - 90;
+            double radians = Math.toRadians(angle);
+            double xMoved = dist * Math.sin(radians);
+            double yMoved = dist * Math.cos(radians);
+            return new LongLat(longitude-xMoved,latitude+yMoved);
         }
         else if(angle ==180){
             return new LongLat(longitude-0.00015,latitude);
         }
         else if(angle<270){
-
+            angle = angle - 180;
+            double radians = Math.toRadians(angle);
+            double xMoved = dist * Math.cos(radians);
+            double yMoved = dist * Math.sin(radians);
+            return new LongLat(longitude-xMoved,latitude-yMoved);
         }
         else if(angle==270){
             return new LongLat(longitude,latitude-0.00015);
         }
         else{
-            //less than 360
+            angle = angle -270;
+            double radians = Math.toRadians(angle);
+            double xMoved = dist * Math.sin(radians);
+            double yMoved = dist * Math.cos(radians);
+            return new LongLat(longitude+xMoved,latitude-yMoved);
         }
     }
 

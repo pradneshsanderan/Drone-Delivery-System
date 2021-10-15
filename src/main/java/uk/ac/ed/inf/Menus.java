@@ -17,24 +17,28 @@ import java.util.HashMap;
 
 public class Menus {
 
-    public class Menu {
-        String name;
-        String location;
-        ArrayList<uk.ac.ed.inf.Menu> menu;
-    }
+
     public String name;
     public String port;
     private static final String urlString = "http://localhost:9898/menus/menus.json";
     private static final HttpClient client = HttpClient.newHttpClient();
 
 
-
+    /**
+     * The Menu class which represents the
+     */
+    public class Menu {
+        String name;
+        String location;
+        ArrayList<uk.ac.ed.inf.Menu> menu;
+    }
 
 
     /**
-     *
-     * @param name
-     * @param port
+     * the Constructor for the Menus class which accepts 2 Strings which represent the name of the machine
+     * and the port where the web server is running
+     * @param name a String representing the name of the machine
+     * @param port a String representing the port where the wen server is running
      */
     Menus(String name, String port){
         this.name = name;
@@ -42,9 +46,9 @@ public class Menus {
     }
 
     /**
-     * 
-     * @param items
-     * @return
+     * A method which states the delivery cost for a valid order
+     * @param items a collection of Strings where each String represents an item that was ordered
+     * @return the total delivery cost for the order, including the price of the item and the standard delivery charge
      */
     public static int  getDeliveryCost(String ... items) {
         int standardDeliveryCharge = 50;

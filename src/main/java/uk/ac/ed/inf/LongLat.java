@@ -29,11 +29,11 @@ public class LongLat {
     /**
      *
      * @param l1
-     * @param l2
      * @return
      */
-    public static double distanceTo(LongLat l1,LongLat l2){
-        return Math.sqrt(Math.pow((l1.latitude-l2.latitude),2)+Math.pow((l1.longitude-l1.longitude),2));
+    public double distanceTo(LongLat l1){
+        LongLat l2 = new LongLat(longitude,latitude);
+        return Math.sqrt(Math.pow((l1.latitude-l2.latitude),2)+Math.pow((l1.longitude-l2.longitude),2));
 
     }
 
@@ -43,8 +43,7 @@ public class LongLat {
      * @return
      */
     public boolean closeTo(LongLat l1){
-        LongLat l2 = new LongLat(longitude,latitude);
-        return distanceTo(l1,l2)<0.00015;
+        return distanceTo(l1)<0.00015;
     }
 
     /**
@@ -54,6 +53,9 @@ public class LongLat {
      */
     public LongLat nextPosition(int angle){
         final double dist = 0.00015;
+        if(angle == -999){
+            return new LongLat(longitude,latitude);
+        }
         if(angle==0){
             return new LongLat(longitude+0.00015,latitude);
         }

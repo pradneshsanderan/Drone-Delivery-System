@@ -1,0 +1,21 @@
+1)read the lunch orders for the date from the database
+    +process the command line arguments to get the date
+    + get the order numbers for that date from the first database
+    + use order number to get the orders for the details from the second table
+    + store the order details for the date in a map
+2) read the menus from the website
+    + compare with the stored order details and put locations in the map with pick up locations
+3)calculate the flight path for the day
+    -use a searching algorithm to search the optimal path for the day
+    - if we use travelling salesman then the coordinates would be the nodes and the cost would be the weight
+    - greedy could work but work have O^n moves cause it has to search each time
+    -
+4)create a database to record the deliveries for the day
+5) create a database to record the flightpatj. move by move
+6) produce a geojson map which provides a visual representation of the flight path
+
+
+
+//for each order no, get the items, compare with all the items in the menus webserver
+// when theres a hit, take the location,use words to get lat,lng, store in a hashset, repeat for each item,
+//repeat for each order no

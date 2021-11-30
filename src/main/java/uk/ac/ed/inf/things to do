@@ -23,3 +23,23 @@
 
 
 // check for the incorrect port error on the http client slides
+
+
+flow of the program:
+get orders
+get order details
+get coordinates
+parse the geojson
+
+start in appleton
+//first run until finished the orders then we check the number of moves later
+loop:run in loop until orders finished
+    check closest pick up
+    loop: run until all items picked up
+        move to pick up
+        hover down, hover up
+        move to next pick up if applicable
+        hover down, hover up
+    move to delivery coordinates
+    hover down , hover up
+

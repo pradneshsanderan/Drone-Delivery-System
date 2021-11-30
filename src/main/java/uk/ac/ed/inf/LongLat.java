@@ -1,5 +1,8 @@
 package uk.ac.ed.inf;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class LongLat {
     public double longitude;
     public double latitude;
@@ -110,6 +113,7 @@ public class LongLat {
             return new LongLat(longitude+xMoved,latitude-yMoved);
         }
     }
+
 
 
 }

@@ -15,12 +15,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class GeoJson {
-    private static final String urlStringNoFlyZones = "http://localhost:9898/buildings/no-fly-zones.geojson";
-    private static final String urlStringLandmarks = "http://localhost:9898/buildings/landmarks.geojson";
+public class GeoJsonParser {
+    private static final String urlStringNoFlyZones = "http://localhost:"+App.webServerPort+"/buildings/no-fly-zones.geojson";
+    private static final String urlStringLandmarks = "http://localhost:"+App.webServerPort+"/buildings/landmarks.geojson";
     private static final HttpClient client = HttpClient.newHttpClient();
-    private static List<Feature> noFlyZoneFeatures;
-    private static List<Feature> landmarkFeatures;
+    public static List<Feature> noFlyZoneFeatures;
+    public static List<Feature> landmarkFeatures;
 
 
     public static void getNoFlyZones(){

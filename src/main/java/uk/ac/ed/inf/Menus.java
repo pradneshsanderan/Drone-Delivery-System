@@ -16,7 +16,7 @@ public class Menus {
 
     public String name;
     public String port;
-    private static final String urlString = "http://localhost:9898/menus/menus.json";
+    private static final String urlString = "http://localhost:"+App.webServerPort+"/menus/menus.json";
     //the HttpClient that is shared between all HttpRequest
     private static final HttpClient client = HttpClient.newHttpClient();
 
@@ -35,7 +35,7 @@ public class Menus {
      * the Constructor for the Menus class which accepts 2 Strings which represent the name of the machine
      * and the port where the web server is running
      * @param name a String representing the name of the machine
-     * @param port a String representing the port where the wen server is running
+     * @param port a String representing the port where the web server is running
      */
     Menus(String name, String port){
         this.name = name;

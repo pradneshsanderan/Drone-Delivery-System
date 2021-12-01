@@ -17,11 +17,6 @@
 
 
 
-//for each order no, get the items, compare with all the items in the menus webserver
-// when theres a hit, take the location,use words to get lat,lng, store in a hashset, repeat for each item,
-//repeat for each order no
-
-
 // check for the incorrect port error on the http client slides
 
 
@@ -43,3 +38,6 @@ loop:run in loop until orders finished
     move to delivery coordinates
     hover down , hover up
 
+
+
+//check that the drone must return to appleton before it runs out of batterry

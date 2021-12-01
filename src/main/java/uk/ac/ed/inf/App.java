@@ -9,18 +9,18 @@ public class App
     public static String day;
     public static String month;
     public static String year;
-    public static int webServerPort;
-    public static int databasePort;
+    public static String webServerPort;
+    public static String databasePort;
     public static void main( String[] args ) {
         day = args[0];
         month= args[1];
         year = args[2];
-        webServerPort = Integer.parseInt( args[3]);
-        databasePort = Integer.parseInt(args[4]);
+        webServerPort = args[3];
+        databasePort = args[4];
         Orders.getCoordinatesAndOrders();
         GeoJsonParser.getNoFlyZones();
         GeoJsonParser.getLandmarks();
-        Drone drone = new Drone(new LongLat(-3.186874,55.944494),0);
+        Drone drone = new Drone();
         while(!Orders.orderNos.isEmpty()){
             String order = drone.closestOrder(Orders.pickUpCoordinates,Orders.orderNos);
             //goes to each shop to pick up orders
@@ -38,5 +38,17 @@ public class App
             }
             Orders.orderNos.remove(order);
         }
+        int count =0;
+        boolean lessThan = true;
+        for(int i=0;i<Drone.distances.size();i++){
+            if (Drone.distances.get(i) > 0.00015) {
+                lessThan = false;
+                count++;
+
+            }
+        }
+        System.out.println(count);
+        System.out.println(lessThan);
+        System.out.println("done");
     }
 }

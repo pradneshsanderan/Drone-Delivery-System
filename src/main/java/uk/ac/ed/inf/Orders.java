@@ -10,10 +10,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.sql.Date;
+import java.util.*;
 
 public class Orders {
     private static final String jdbcString = "jdbc:derby://localhost:"+ App.databasePort+"/derbyDB";
@@ -21,7 +19,7 @@ public class Orders {
     public static HashMap<String, ArrayList<double[]>> pickUpCoordinates  = new HashMap<>();
     public static HashMap<String,HashSet<String>> pickUpWords = new HashMap<>();
     public static HashMap<String,double[]> deliveryCoordinates = new HashMap<>();
-    public static HashMap<String,String[]> deliveryAddress = new HashMap<>();
+    public static HashMap<String,String> deliveryAddress = new HashMap<>();
     public static HashMap<String,String> customers = new HashMap<>();
     public static HashMap<String,String> items = new HashMap<>();
     public static ArrayList<String> orderNos = new ArrayList<>();
@@ -45,11 +43,11 @@ public class Orders {
                 String deliverTo = rs.getString("deliverTo");
                 orderNos.add(orderNumber);
                 customers.put(orderNumber,custName);
-                deliveryAddress.put(orderNumber,deliverTo.split("."));
+                deliveryAddress.put(orderNumber,deliverTo);
 
             }
         }catch(java.sql.SQLException e){
-            System.out.println("SQLException returned");
+            e.printStackTrace();
         }
 
 
@@ -73,16 +71,19 @@ public class Orders {
             }
 
         }catch(java.sql.SQLException e){
-            System.out.println("SQLException returned");
+            e.printStackTrace();
         }
 
 
     }
     private static void getDeliveryCoordinates(){
         for(int i=0;i<orderNos.size();i++){
-            String word1 = deliveryAddress.get(orderNos.get(i))[0];
-            String word2 = deliveryAddress.get(orderNos.get(i))[1];
-            String word3 = deliveryAddress.get(orderNos.get(i))[2];
+            String addressString = deliveryAddress.get(orderNos.get(i));
+            String[] address = addressString.split("\\.");
+
+            String word1 = address[0];
+            String word2 = address[1];
+            String word3 = address[2];
             String urlString = "http://localhost:"+App.webServerPort+"/words/"+word1+"/"+word2+"/"+word3+"/details.json";
 
             try{
@@ -115,7 +116,7 @@ public class Orders {
     private static void getPickUpWords(){
         String urlString = "http://localhost:"+App.webServerPort+"/menus/menus.json";
         for(int i =0;i<orderNos.size();i++){
-            String[] itemsOrdered = items.get(orderNos.get(i)).split(".");
+            String[] itemsOrdered = items.get(orderNos.get(i)).split("\\.");
             HashSet<String> words = new HashSet<>();
             for(int j=0;j<itemsOrdered.length;j++){
                 try{
@@ -164,7 +165,7 @@ public class Orders {
             Iterator val = curr.iterator();
             ArrayList<double[]> addressList = new ArrayList<>();
             while (val.hasNext()){
-                String[] currWords = val.next().toString().split(".");
+                String[] currWords = val.next().toString().split("\\.");
                 String word1 = currWords[0];
                 String word2 = currWords[1];
                 String word3 = currWords[2];
@@ -203,6 +204,9 @@ public class Orders {
         getDeliveryCoordinates();
         getPickUpWords();
         getPickUpCoordinates();
+//        for(int i=0;i<orderNos.size();i++){
+//            System.out.println(Arrays.toString(deliveryCoordinates.get(orderNos.get(i))));
+//        }
     }
 
 

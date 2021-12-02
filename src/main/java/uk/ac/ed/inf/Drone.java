@@ -16,74 +16,110 @@ public class Drone {
     public static ArrayList<LongLat> movements = new ArrayList<>();
     public static ArrayList<Double> distances = new ArrayList<>();
 
-
-
-
-    public void move(LongLat targetPosition,int angle){
-        double distanceToTarget = currentPosition.distanceTo(targetPosition);
-        if(currentPosition.nextPosition(currAngle).distanceTo(targetPosition)<distanceToTarget && !inNoFlyZone(currentPosition.nextPosition(currAngle),GeoJsonParser.noFlyZoneFeatures)){
-            distances.add(currentPosition.distanceTo(currentPosition.nextPosition(currAngle)));
-            currentPosition = currentPosition.nextPosition(currAngle);
-
+    public void move(LongLat targetPosition){
+        //System.out.println("curr angle= "+ currAngle);
+        LongLat nextPostWithCurrAngle = currentPosition.nextPosition(currAngle);
+        double distanceToTargetPos = currentPosition.distanceTo(targetPosition);
+        if(!inNoFlyZone(nextPostWithCurrAngle) && nextPostWithCurrAngle.isConfined()&& (distanceToTargetPos>=nextPostWithCurrAngle.distanceTo(targetPosition))){
+            currentPosition = nextPostWithCurrAngle;
+            //System.out.println("if");
         }
+        //current angle must be changed
         else{
-            double newAngle = Math.toDegrees(Math.atan2(targetPosition.latitude-currentPosition.latitude,targetPosition.longitude-currentPosition.longitude));
-            if(newAngle<0){
-                newAngle += 360;
-            }
-            int newAngle1 = (int) (10*(Math.round(newAngle/10)));
-            LongLat nextPosition = currentPosition.nextPosition(newAngle1);
-            if(!inNoFlyZone(nextPosition,GeoJsonParser.noFlyZoneFeatures)){
-                currAngle = newAngle1;
-                distances.add(currentPosition.distanceTo(nextPosition));
-                currentPosition = nextPosition;
-
-            }
-            else{
-                for (int i=0;i<36;i++){
-                    //check if add and sub in no fly zone
-                    //if both in no flyzone
-                    //if only one in no fly zone
-                    //else loop
-                    if(inNoFlyZone(currentPosition.nextPosition(newAngle1+(i*10)),GeoJsonParser.noFlyZoneFeatures) &&inNoFlyZone(currentPosition.nextPosition(newAngle1-(i*10)),GeoJsonParser.noFlyZoneFeatures) ){
-                        if(currentPosition.distanceTo(currentPosition.nextPosition(newAngle1+(i*10)))> currentPosition.distanceTo(currentPosition.nextPosition(newAngle1-(i*10)))){
-                            currAngle = newAngle1 - (i*10);
-                            distances.add(currentPosition.distanceTo(currentPosition.nextPosition(newAngle1-(i*10))));
-                            currentPosition = currentPosition.nextPosition(newAngle1-(i*10));
-                        }
-                        else{
-                            currAngle = newAngle1 + (i*10);
-                            distances.add(currentPosition.distanceTo(currentPosition.nextPosition(newAngle1+(i*10))));
-                            currentPosition = currentPosition.nextPosition(newAngle1+(i*10));
-                        }
-                    }
-                    else if(inNoFlyZone(currentPosition.nextPosition(currAngle+(i*10)),GeoJsonParser.noFlyZoneFeatures)){
-                        currAngle = newAngle1 + (i*10);
-                        distances.add(currentPosition.distanceTo(currentPosition.nextPosition(newAngle1+(i*10))));
-                        currentPosition = currentPosition.nextPosition(newAngle1+(i*10));
-                    }
-                    else if(inNoFlyZone(currentPosition.nextPosition(currAngle-(i*10)),GeoJsonParser.noFlyZoneFeatures)){
-                        currAngle = newAngle1 - (i*10);
-                        distances.add(currentPosition.distanceTo(currentPosition.nextPosition(newAngle1-(i*10))));
-                        currentPosition = currentPosition.nextPosition(newAngle1-(i*10));
-                    }
+            //System.out.println("else");
+            double lowestDistance = Double.MAX_VALUE;
+            int lowestDistanceAngle = currAngle;
+            for(int i=1;i<36;i++){
+                int newAngle = (currAngle + (i*10)) %360;
+                LongLat newPos = currentPosition.nextPosition(newAngle);
+                if(!inNoFlyZone(newPos) && newPos.isConfined() && (newPos.distanceTo(targetPosition)<=lowestDistance)){
+                    lowestDistance = newPos.distanceTo(targetPosition);
+                    lowestDistanceAngle = newAngle;
                 }
             }
+            //System.out.println("lowest distance angle: "+lowestDistanceAngle);
+            currAngle = lowestDistanceAngle;
+            currentPosition = currentPosition.nextPosition(lowestDistanceAngle);
         }
         movements.add(currentPosition);
     }
-    private boolean inNoFlyZone(LongLat nextPosition, List<Feature> noFlyZones){
+
+
+//    public void move(LongLat targetPosition){
+//        System.out.println(currAngle);
+//        double distanceToTarget = currentPosition.distanceTo(targetPosition);
+//        if(currentPosition.nextPosition(currAngle).distanceTo(targetPosition)<distanceToTarget && !inNoFlyZone(currentPosition.nextPosition(currAngle),GeoJsonParser.noFlyZoneFeatures)){
+//            distances.add(currentPosition.distanceTo(currentPosition.nextPosition(currAngle)));
+//            currentPosition = currentPosition.nextPosition(currAngle);
+//            System.out.println("iffed");
+//
+//        }
+//        else{
+//
+//            double newAngle = Math.toDegrees(Math.atan2(targetPosition.latitude-currentPosition.latitude,targetPosition.longitude-currentPosition.longitude));
+//            if(newAngle<0){
+//                newAngle += 360;
+//            }
+//            int newAngle1 = (int) (10*(Math.round(newAngle/10)));
+//            LongLat nextPos = currentPosition.nextPosition(newAngle1);
+//            if(!inNoFlyZone(nextPos,GeoJsonParser.noFlyZoneFeatures)){
+//                System.out.println("elsed 1");
+//                currAngle = newAngle1;
+//                distances.add(currentPosition.distanceTo(nextPos));
+//                currentPosition = nextPos;
+//
+//            }
+//            else{
+//                for (int i=0;i<36;i++){
+//                    System.out.println(i);
+//                    if(!inNoFlyZone(currentPosition.nextPosition(newAngle1+(i*10)),GeoJsonParser.noFlyZoneFeatures) &&!inNoFlyZone(currentPosition.nextPosition(newAngle1-(i*10)),GeoJsonParser.noFlyZoneFeatures) ){
+//                        if(currentPosition.distanceTo(currentPosition.nextPosition(newAngle1+(i*10)))> currentPosition.distanceTo(currentPosition.nextPosition(newAngle1-(i*10)))){
+//                            currAngle = newAngle1 - (i*10);
+//                            distances.add(currentPosition.distanceTo(currentPosition.nextPosition(newAngle1-(i*10))));
+//                            currentPosition = currentPosition.nextPosition(newAngle1-(i*10));
+//                        }
+//                        else{
+//                            currAngle = newAngle1 + (i*10);
+//                            distances.add(currentPosition.distanceTo(currentPosition.nextPosition(newAngle1+(i*10))));
+//                            currentPosition = currentPosition.nextPosition(newAngle1+(i*10));
+//                        }
+//                        System.out.println("elsed2");
+//                    }
+//                    else if(!inNoFlyZone(currentPosition.nextPosition(currAngle+(i*10)),GeoJsonParser.noFlyZoneFeatures)){
+//                        currAngle = newAngle1 + (i*10);
+//                        distances.add(currentPosition.distanceTo(currentPosition.nextPosition(newAngle1+(i*10))));
+//                        currentPosition = currentPosition.nextPosition(newAngle1+(i*10));
+//                        System.out.println("elsed 3");
+//                    }
+//                    else if(!inNoFlyZone(currentPosition.nextPosition(currAngle-(i*10)),GeoJsonParser.noFlyZoneFeatures)){
+//                        currAngle = newAngle1 - (i*10);
+//                        distances.add(currentPosition.distanceTo(currentPosition.nextPosition(newAngle1-(i*10))));
+//                        currentPosition = currentPosition.nextPosition(newAngle1-(i*10));
+//                        System.out.println("elsed4");
+//                    }
+//                    System.out.println("rotation: " +i);
+//                }
+//            }
+//        }
+//
+//    }
+    private boolean inNoFlyZone(LongLat nextPosition){
+        List<Feature> noFlyZones = GeoJsonParser.noFlyZoneFeatures;
         Line2D movement = new Line2D.Double(currentPosition.longitude,currentPosition.latitude,nextPosition.longitude,nextPosition.latitude);
         for(int i =0;i<noFlyZones.size();i++){
+            //System.out.println("poly: "+i);
             if(noFlyZones.get(i).geometry()!=null && noFlyZones.get(i).geometry().type().equals("Polygon")){
                 Polygon polygon = (Polygon) noFlyZones.get(i).geometry();
                 if(polygon!=null){
-                    for(int j=0;j<polygon.coordinates().size()-1;j++){
-                        int nextI = i+1;
-                        List<Double> coordinates1 = polygon.coordinates().get(0).get(i).coordinates();
+                    for(int j=0;j<polygon.coordinates().get(0).size()-1;j++){
+                        int nextI = j+1;
+                        List<Double> coordinates1 = polygon.coordinates().get(0).get(j).coordinates();
                         List<Double> coordinates2 = polygon.coordinates().get(0).get(nextI).coordinates();
+                        //System.out.println("coord1: " + coordinates1);
+                        //System.out.println("coord2:"+coordinates2);
                         Line2D edge = new Line2D.Double(coordinates1.get(0),coordinates1.get(1),coordinates2.get(0),coordinates2.get(1));
                         if(movement.intersectsLine(edge)){
+                            //System.out.println("intersects");
                             return true;
                         }
                     }
@@ -95,8 +131,11 @@ public class Drone {
         return false;
     }
 
-    public String closestOrder(HashMap<String, ArrayList<double[]>> pickUpCoordinates, ArrayList<String> orderNos){
+    public String[] closestOrder(){
+        HashMap<String, ArrayList<double[]>> pickUpCoordinates = Orders.pickUpCoordinates;
+        ArrayList<String> orderNos = Orders.orderNos;
         String closestOrderNo = orderNos.get(0);
+        int shop = 0;
         double lowest = Integer.MAX_VALUE;
         for(int i=0;i<orderNos.size();i++){
             String curr = orderNos.get(i);
@@ -104,12 +143,14 @@ public class Drone {
             for(int j=0;j<listSize;j++) {
                 double[] coordinates = pickUpCoordinates.get(curr).get(j);
                 LongLat currCoordinates = new LongLat(coordinates[0],coordinates[1]);
-                if(currentPosition.distanceTo(currCoordinates)<lowest){
+                if(currentPosition.distanceTo(currCoordinates)<=lowest){
                     closestOrderNo = curr;
                     lowest = currentPosition.distanceTo(currCoordinates);
+                    shop = j;
                 }
             }
         }
-        return closestOrderNo;
+
+        return new String[] {closestOrderNo,shop+""};
     }
 }

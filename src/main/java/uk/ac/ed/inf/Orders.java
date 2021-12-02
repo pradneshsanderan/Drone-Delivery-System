@@ -21,9 +21,9 @@ public class Orders {
     public static HashMap<String,double[]> deliveryCoordinates = new HashMap<>();
     public static HashMap<String,String> deliveryAddress = new HashMap<>();
     public static HashMap<String,String> customers = new HashMap<>();
-    public static HashMap<String,String> items = new HashMap<>();
+    public static HashMap<String,ArrayList<String>> items = new HashMap<>();
     public static ArrayList<String> orderNos = new ArrayList<>();
-    private static Date deliveryDate = Date.valueOf(App.year+"-"+App.month+"-"+App.day);
+    private static final Date deliveryDate = Date.valueOf(App.year+"-"+App.month+"-"+App.day);
 
 
 
@@ -59,15 +59,17 @@ public class Orders {
             final String ordersQuery = "select * from orderDetails where orderNo=(?)";
             PreparedStatement psCourseQuery = conn.prepareStatement(ordersQuery);
             for (String orderNo : orderNos) {
+                ArrayList<String> s = new ArrayList<>();
                 psCourseQuery.setString(1, orderNo);
                 ResultSet rs = psCourseQuery.executeQuery();
                 while (rs.next()) {
-                    String orderNumber = rs.getString("orderNo");
+
                     String item = rs.getString("item");
-                    items.put(orderNumber, item);
+                    s.add(item);
 
 
                 }
+                items.put(orderNo, s);
             }
 
         }catch(java.sql.SQLException e){
@@ -116,9 +118,9 @@ public class Orders {
     private static void getPickUpWords(){
         String urlString = "http://localhost:"+App.webServerPort+"/menus/menus.json";
         for(int i =0;i<orderNos.size();i++){
-            String[] itemsOrdered = items.get(orderNos.get(i)).split("\\.");
             HashSet<String> words = new HashSet<>();
-            for(int j=0;j<itemsOrdered.length;j++){
+            ArrayList<String> itemsOrdered = items.get(orderNos.get(i));
+            for(int j=0;j<itemsOrdered.size();j++){
                 try{
                     //the request that would be sent to the website as a http request
                     HttpRequest request = HttpRequest.newBuilder()
@@ -139,8 +141,8 @@ public class Orders {
                         int size = menu.menu.size();
                         for (int k = 0; k < size; k++) {
                             // the current item
-                            String currItem = menu.menu.get(j).item;
-                            if(currItem.equals(itemsOrdered[j])){
+                            String currItem = menu.menu.get(k).item;
+                            if(currItem.equals(itemsOrdered.get(j))){
                                 words.add(menu.location);
                             }
 

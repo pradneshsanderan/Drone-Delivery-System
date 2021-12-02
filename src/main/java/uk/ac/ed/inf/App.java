@@ -27,14 +27,13 @@ public class App
         GeoJsonParser.getLandmarks();
         Drone drone = new Drone();
         System.out.println(Orders.orderNos);
-        //Orders.orderNos.remove(3);
         while(!Orders.orderNos.isEmpty()){
             String order = drone.closestOrder()[0];
             System.out.println(order);
             int shop = Integer.parseInt(drone.closestOrder()[1]);
             //goes to each shop to pick up orders
             LongLat nextPos = new LongLat(Orders.pickUpCoordinates.get(order).get(shop)[0],Orders.pickUpCoordinates.get(order).get(shop)[1]);
-            //System.out.println("pick up");
+            System.out.println("pick up");
             while(!drone.currentPosition.closeTo(nextPos)){
                 //System.out.println("moving");
                 drone.move(nextPos);
@@ -45,7 +44,7 @@ public class App
                     nextShop = 1;
                 }
                 LongLat nextPos1 = new LongLat(Orders.pickUpCoordinates.get(order).get(nextShop)[0],Orders.pickUpCoordinates.get(order).get(nextShop)[1]);
-                //System.out.println("pick up");
+                System.out.println("pick up");
                 while(!drone.currentPosition.closeTo(nextPos1)){
                     //System.out.println("moving");
                     drone.move(nextPos1);
@@ -53,7 +52,7 @@ public class App
             }
 
             //moves to delivery
-            //System.out.println("Delivery");
+            System.out.println("Delivery");
             LongLat deliveryPos = new LongLat(Orders.deliveryCoordinates.get(order)[0],Orders.deliveryCoordinates.get(order)[1]);
             while(!drone.currentPosition.closeTo(deliveryPos)){
                 drone.move(deliveryPos);

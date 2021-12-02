@@ -12,37 +12,105 @@ import com.mapbox.geojson.Geometry;
 public class Drone {
 
     public LongLat currentPosition = new LongLat(-3.186874,55.944494);
+    public LongLat prevPosition ;
     public int currAngle =0;
     public static ArrayList<LongLat> movements = new ArrayList<>();
     public static ArrayList<Double> distances = new ArrayList<>();
 
     public void move(LongLat targetPosition){
-        //System.out.println("curr angle= "+ currAngle);
+        System.out.println("curr angle= "+ currAngle);
         LongLat nextPostWithCurrAngle = currentPosition.nextPosition(currAngle);
         double distanceToTargetPos = currentPosition.distanceTo(targetPosition);
         if(!inNoFlyZone(nextPostWithCurrAngle) && nextPostWithCurrAngle.isConfined()&& (distanceToTargetPos>=nextPostWithCurrAngle.distanceTo(targetPosition))){
+            System.out.println("no change");
+            prevPosition = currentPosition;
             currentPosition = nextPostWithCurrAngle;
-            //System.out.println("if");
+
         }
         //current angle must be changed
         else{
-            //System.out.println("else");
+            System.out.println("change angle");
             double lowestDistance = Double.MAX_VALUE;
             int lowestDistanceAngle = currAngle;
             for(int i=1;i<36;i++){
                 int newAngle = (currAngle + (i*10)) %360;
                 LongLat newPos = currentPosition.nextPosition(newAngle);
                 if(!inNoFlyZone(newPos) && newPos.isConfined() && (newPos.distanceTo(targetPosition)<=lowestDistance)){
+                    System.out.println(i);
+                    System.out.println("prevPos: "+prevPosition.longitude+","+prevPosition.latitude);
+                    System.out.println("newPos: "+newPos.longitude+","+newPos.latitude);
                     lowestDistance = newPos.distanceTo(targetPosition);
                     lowestDistanceAngle = newAngle;
                 }
             }
-            //System.out.println("lowest distance angle: "+lowestDistanceAngle);
+            //System.out.println("lowest distance: "+lowestDistance);
+            //System.out.println("best angle: "+lowestDistanceAngle);
             currAngle = lowestDistanceAngle;
+            prevPosition = currentPosition;
             currentPosition = currentPosition.nextPosition(lowestDistanceAngle);
         }
         movements.add(currentPosition);
     }
+
+
+    private boolean inNoFlyZone(LongLat nextPosition){
+        List<Feature> noFlyZones = GeoJsonParser.noFlyZoneFeatures;
+        Line2D movement = new Line2D.Double(currentPosition.longitude,currentPosition.latitude,nextPosition.longitude,nextPosition.latitude);
+        for(int i =0;i<noFlyZones.size();i++){
+            //System.out.println("poly: "+i);
+            if(noFlyZones.get(i).geometry()!=null && noFlyZones.get(i).geometry().type().equals("Polygon")){
+                Polygon polygon = (Polygon) noFlyZones.get(i).geometry();
+                if(polygon!=null){
+                    for(int j=0;j<polygon.coordinates().get(0).size()-1;j++){
+                        int nextI = j+1;
+                        List<Double> coordinates1 = polygon.coordinates().get(0).get(j).coordinates();
+                        List<Double> coordinates2 = polygon.coordinates().get(0).get(nextI).coordinates();
+                        //System.out.println("coord1: " + coordinates1);
+                        //System.out.println("coord2:"+coordinates2);
+                        Line2D edge = new Line2D.Double(coordinates1.get(0),coordinates1.get(1),coordinates2.get(0),coordinates2.get(1));
+                        if(movement.intersectsLine(edge)){
+                            //System.out.println("intersects");
+                            return true;
+                        }
+                    }
+
+                }
+
+            }
+        }
+        return false;
+    }
+
+    public String[] closestOrder(){
+        HashMap<String, ArrayList<double[]>> pickUpCoordinates = Orders.pickUpCoordinates;
+        ArrayList<String> orderNos = Orders.orderNos;
+        String closestOrderNo = orderNos.get(0);
+        int shop = 0;
+        double lowest = Integer.MAX_VALUE;
+        for(int i=0;i<orderNos.size();i++){
+            String curr = orderNos.get(i);
+            int listSize = pickUpCoordinates.get(curr).size();
+            for(int j=0;j<listSize;j++) {
+                double[] coordinates = pickUpCoordinates.get(curr).get(j);
+                LongLat currCoordinates = new LongLat(coordinates[0],coordinates[1]);
+                if(currentPosition.distanceTo(currCoordinates)<=lowest){
+                    closestOrderNo = curr;
+                    lowest = currentPosition.distanceTo(currCoordinates);
+                    shop = j;
+                }
+            }
+        }
+
+        return new String[] {closestOrderNo,shop+""};
+    }
+}
+
+
+
+
+
+
+
 
 
 //    public void move(LongLat targetPosition){
@@ -103,54 +171,3 @@ public class Drone {
 //        }
 //
 //    }
-    private boolean inNoFlyZone(LongLat nextPosition){
-        List<Feature> noFlyZones = GeoJsonParser.noFlyZoneFeatures;
-        Line2D movement = new Line2D.Double(currentPosition.longitude,currentPosition.latitude,nextPosition.longitude,nextPosition.latitude);
-        for(int i =0;i<noFlyZones.size();i++){
-            //System.out.println("poly: "+i);
-            if(noFlyZones.get(i).geometry()!=null && noFlyZones.get(i).geometry().type().equals("Polygon")){
-                Polygon polygon = (Polygon) noFlyZones.get(i).geometry();
-                if(polygon!=null){
-                    for(int j=0;j<polygon.coordinates().get(0).size()-1;j++){
-                        int nextI = j+1;
-                        List<Double> coordinates1 = polygon.coordinates().get(0).get(j).coordinates();
-                        List<Double> coordinates2 = polygon.coordinates().get(0).get(nextI).coordinates();
-                        //System.out.println("coord1: " + coordinates1);
-                        //System.out.println("coord2:"+coordinates2);
-                        Line2D edge = new Line2D.Double(coordinates1.get(0),coordinates1.get(1),coordinates2.get(0),coordinates2.get(1));
-                        if(movement.intersectsLine(edge)){
-                            //System.out.println("intersects");
-                            return true;
-                        }
-                    }
-
-                }
-
-            }
-        }
-        return false;
-    }
-
-    public String[] closestOrder(){
-        HashMap<String, ArrayList<double[]>> pickUpCoordinates = Orders.pickUpCoordinates;
-        ArrayList<String> orderNos = Orders.orderNos;
-        String closestOrderNo = orderNos.get(0);
-        int shop = 0;
-        double lowest = Integer.MAX_VALUE;
-        for(int i=0;i<orderNos.size();i++){
-            String curr = orderNos.get(i);
-            int listSize = pickUpCoordinates.get(curr).size();
-            for(int j=0;j<listSize;j++) {
-                double[] coordinates = pickUpCoordinates.get(curr).get(j);
-                LongLat currCoordinates = new LongLat(coordinates[0],coordinates[1]);
-                if(currentPosition.distanceTo(currCoordinates)<=lowest){
-                    closestOrderNo = curr;
-                    lowest = currentPosition.distanceTo(currCoordinates);
-                    shop = j;
-                }
-            }
-        }
-
-        return new String[] {closestOrderNo,shop+""};
-    }
-}

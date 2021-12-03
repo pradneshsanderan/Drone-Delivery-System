@@ -51,5 +51,8 @@ so we backtrack until that point,
 then we take the next angle
 
 
+//heuristic for the A* would be the closest order as implemented in the drone class
+
+
 
 //check that the drone must return to appleton before it runs out of batterry

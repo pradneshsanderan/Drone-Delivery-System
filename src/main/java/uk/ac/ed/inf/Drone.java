@@ -1,15 +1,12 @@
 package uk.ac.ed.inf;
 
-import com.mapbox.geojson.LineString;
-import com.mapbox.geojson.Polygon;
+import com.mapbox.geojson.*;
 import com.mapbox.geojson.constants.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.awt.geom.Line2D;
 import java.util.HashSet;
 import java.util.List;
-import com.mapbox.geojson.Feature;
-import com.mapbox.geojson.Geometry;
 
 public class Drone {
 
@@ -64,34 +61,53 @@ public class Drone {
         while(!currentPosition.closeTo(targetPosition)){
             LongLat nextPostWithCurrAngle = currentPosition.nextPosition(currAngle);
             double distanceToTargetPos = currentPosition.distanceTo(targetPosition);
-            if(!inNoFlyZone(nextPostWithCurrAngle) && nextPostWithCurrAngle.isConfined()&& (distanceToTargetPos>=nextPostWithCurrAngle.distanceTo(targetPosition)) && !coordinatesVisited.containsValue(nextPostWithCurrAngle)){
-                prevPosition = currentPosition;
-                currentPosition = nextPostWithCurrAngle;
-                anglesTaken.put(anglesTakenInd,currAngle);
-                coordinatesVisited.put(coordinatesVisitedInd,currentPosition);
-                coordinatesVisitedInd++;
-                anglesTakenInd++;
+            if(!inNoFlyZone(nextPostWithCurrAngle) && nextPostWithCurrAngle.isConfined()&& (distanceToTargetPos>=nextPostWithCurrAngle.distanceTo(targetPosition))&&!coordinatesVisited.containsValue(nextPostWithCurrAngle)){
+                if(!coordinatesVisited.containsValue(nextPostWithCurrAngle)){
+                    prevPosition = currentPosition;
+                    currentPosition = nextPostWithCurrAngle;
+                    anglesTaken.put(anglesTakenInd,currAngle);
+                    coordinatesVisited.put(coordinatesVisitedInd,currentPosition);
+                    coordinatesVisitedInd++;
+                    anglesTakenInd++;
+                }
+                else{
+                    //backtrack
+                }
 
             }
             else{
-            double lowestDistance = Double.MAX_VALUE;
-            int lowestDistanceAngle = currAngle;
-            for(int i=1;i<36;i++){
-                int newAngle = (currAngle + (i*10)) %360;
-                LongLat newPos = currentPosition.nextPosition(newAngle);
-                if(!inNoFlyZone(newPos) && newPos.isConfined() && (newPos.distanceTo(targetPosition)<=lowestDistance) && newPos.latitude != prevPosition.latitude && newPos.longitude!= prevPosition.longitude){
-                   //System.out.println(i);
-                    System.out.println("prevPos: "+prevPosition.longitude+","+prevPosition.latitude);
-                    System.out.println("newPos: "+newPos.longitude+","+newPos.latitude);
-                    lowestDistance = newPos.distanceTo(targetPosition);
-                    lowestDistanceAngle = newAngle;
+                double lowestDistance = Double.MAX_VALUE;
+                int lowestDistanceAngle = currAngle;
+                for(int i=1;i<36;i++){
+                    int newAngle = (currAngle + (i*10)) %360;
+                    LongLat newPos = currentPosition.nextPosition(newAngle);
+                    if(!inNoFlyZone(newPos) && newPos.isConfined() && (newPos.distanceTo(targetPosition)<=lowestDistance) && newPos.latitude != prevPosition.latitude
+                            && newPos.longitude!= prevPosition.longitude & !coordinatesVisited.containsValue(newPos)){
+                       //System.out.println(i);
+    //                    System.out.println("prevPos: "+prevPosition.longitude+","+prevPosition.latitude);
+    //                    System.out.println("newPos: "+newPos.longitude+","+newPos.latitude);
+                        lowestDistance = newPos.distanceTo(targetPosition);
+                        lowestDistanceAngle = newAngle;
+                    }
                 }
+                currAngle = lowestDistanceAngle;
+                prevPosition = currentPosition;
+                currentPosition = currentPosition.nextPosition(lowestDistanceAngle);
+                anglesTaken.put(anglesTakenInd,currAngle);
+                coordinatesVisited.put(coordinatesVisitedInd,currentPosition);
+                anglesTakenInd++;
+                coordinatesVisitedInd++;
             }
-            currAngle = lowestDistanceAngle;
-            prevPosition = currentPosition;
-            currentPosition = currentPosition.nextPosition(lowestDistanceAngle);
-        }
-        movements.add(currentPosition);
+            movements.add(currentPosition);
+//            List<Point> pointList = new ArrayList<>();
+//            pointList.add(Point.fromLngLat(-3.186874,55.944494));
+//            for(int i=0;i<Drone.movements.size();i++){
+//                pointList.add(Point.fromLngLat(Drone.movements.get(i).longitude,Drone.movements.get(i).latitude));
+//            }
+//
+//            Geometry geometry = (Geometry) LineString.fromLngLats(pointList);
+//            FeatureCollection fc = FeatureCollection.fromFeature(Feature.fromGeometry(geometry));
+//            System.out.println(fc.toJson());
         }
 
     }

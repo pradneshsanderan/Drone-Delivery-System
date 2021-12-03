@@ -4,7 +4,7 @@
     + use order number to get the orders for the details from the second table
     + store the order details for the date in a map
 2) read the menus from the website
-    + compare with the stored order details and put locations in the map with pick up locations
+    + compare with the stored order details /and put locations in the map with pick up locations
 3)calculate the flight path for the day
     -use a searching algorithm to search the optimal path for the day
     - if we use travelling salesman then the coordinates would be the nodes and the cost would be the weight
@@ -16,6 +16,9 @@
 6) produce a geojson map which provides a visual representation of the flight path
 
 
+
+//getting stuck on: 4/4,2/3,5/5,6/6,7/7,8/8,9/9,10/10,11/11,12/12
+// main issue is detecting when it is stuck
 
 // check for the incorrect port error on the http client slides
 
@@ -37,6 +40,15 @@ loop:run in loop until orders finished
         hover down, hover up
     move to delivery coordinates
     hover down , hover up
+
+
+//new move program
+call move once only in app not multiple times
+the most optimum path would not do reverses
+so we list all the movements(coordinates) with angle taken
+if we go back to a certain angle then we fucked up somewhere
+so we backtrack until that point,
+then we take the next angle
 
 
 

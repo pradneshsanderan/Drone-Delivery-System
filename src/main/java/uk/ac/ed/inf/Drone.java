@@ -6,6 +6,7 @@ import com.mapbox.geojson.constants.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.awt.geom.Line2D;
+import java.util.HashSet;
 import java.util.List;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.Geometry;
@@ -18,40 +19,83 @@ public class Drone {
     public static ArrayList<LongLat> movements = new ArrayList<>();
     public static ArrayList<Double> distances = new ArrayList<>();
 
-    public void move(LongLat targetPosition){
-//        System.out.println("curr angle= "+ currAngle);
-        LongLat nextPostWithCurrAngle = currentPosition.nextPosition(currAngle);
-        double distanceToTargetPos = currentPosition.distanceTo(targetPosition);
-        if(!inNoFlyZone(nextPostWithCurrAngle) && nextPostWithCurrAngle.isConfined()&& (distanceToTargetPos>=nextPostWithCurrAngle.distanceTo(targetPosition))){
-//            System.out.println("no change");
-            prevPosition = currentPosition;
-            currentPosition = nextPostWithCurrAngle;
+//    public void move(LongLat targetPosition){
+////        System.out.println( currAngle);
+//        LongLat nextPostWithCurrAngle = currentPosition.nextPosition(currAngle);
+//        double distanceToTargetPos = currentPosition.distanceTo(targetPosition);
+//        if(!inNoFlyZone(nextPostWithCurrAngle) && nextPostWithCurrAngle.isConfined()&& (distanceToTargetPos>=nextPostWithCurrAngle.distanceTo(targetPosition))){
+////            System.out.println("no change");
+//            prevPosition = currentPosition;
+//            currentPosition = nextPostWithCurrAngle;
+//
+//        }
+//        //current angle must be changed
+//        else{
+//            //System.out.println("change angle");
+//            double lowestDistance = Double.MAX_VALUE;
+//            int lowestDistanceAngle = currAngle;
+//            for(int i=1;i<36;i++){
+//                int newAngle = (currAngle + (i*10)) %360;
+//                LongLat newPos = currentPosition.nextPosition(newAngle);
+//                if(!inNoFlyZone(newPos) && newPos.isConfined() && (newPos.distanceTo(targetPosition)<=lowestDistance) && newPos.latitude != prevPosition.latitude && newPos.longitude!= prevPosition.longitude){
+//                   //System.out.println(i);
+////                    System.out.println("prevPos: "+prevPosition.longitude+","+prevPosition.latitude);
+////                    System.out.println("newPos: "+newPos.longitude+","+newPos.latitude);
+//                    lowestDistance = newPos.distanceTo(targetPosition);
+//                    lowestDistanceAngle = newAngle;
+//                }
+//            }
+//            //System.out.println("lowest distance: "+lowestDistance);
+//            //System.out.println("best angle: "+lowestDistanceAngle);
+//            currAngle = lowestDistanceAngle;
+//            prevPosition = currentPosition;
+//            currentPosition = currentPosition.nextPosition(lowestDistanceAngle);
+//        }
+//        movements.add(currentPosition);
+//    }
 
-        }
-        //current angle must be changed
-        else{
-//            System.out.println("change angle");
+
+    public void move(LongLat targetPosition){
+        HashMap<Integer,LongLat> coordinatesVisited = new HashMap<>();
+        int coordinatesVisitedInd = 1;
+        coordinatesVisited.put(0,currentPosition);
+        HashMap<Integer,Integer> anglesTaken = new HashMap<>();
+        int anglesTakenInd =0;
+        while(!currentPosition.closeTo(targetPosition)){
+            LongLat nextPostWithCurrAngle = currentPosition.nextPosition(currAngle);
+            double distanceToTargetPos = currentPosition.distanceTo(targetPosition);
+            if(!inNoFlyZone(nextPostWithCurrAngle) && nextPostWithCurrAngle.isConfined()&& (distanceToTargetPos>=nextPostWithCurrAngle.distanceTo(targetPosition)) && !coordinatesVisited.containsValue(nextPostWithCurrAngle)){
+                prevPosition = currentPosition;
+                currentPosition = nextPostWithCurrAngle;
+                anglesTaken.put(anglesTakenInd,currAngle);
+                coordinatesVisited.put(coordinatesVisitedInd,currentPosition);
+                coordinatesVisitedInd++;
+                anglesTakenInd++;
+
+            }
+            else{
             double lowestDistance = Double.MAX_VALUE;
             int lowestDistanceAngle = currAngle;
             for(int i=1;i<36;i++){
                 int newAngle = (currAngle + (i*10)) %360;
                 LongLat newPos = currentPosition.nextPosition(newAngle);
                 if(!inNoFlyZone(newPos) && newPos.isConfined() && (newPos.distanceTo(targetPosition)<=lowestDistance) && newPos.latitude != prevPosition.latitude && newPos.longitude!= prevPosition.longitude){
-                   System.out.println(i);
-//                    System.out.println("prevPos: "+prevPosition.longitude+","+prevPosition.latitude);
-//                    System.out.println("newPos: "+newPos.longitude+","+newPos.latitude);
+                   //System.out.println(i);
+                    System.out.println("prevPos: "+prevPosition.longitude+","+prevPosition.latitude);
+                    System.out.println("newPos: "+newPos.longitude+","+newPos.latitude);
                     lowestDistance = newPos.distanceTo(targetPosition);
                     lowestDistanceAngle = newAngle;
                 }
             }
-            //System.out.println("lowest distance: "+lowestDistance);
-            //System.out.println("best angle: "+lowestDistanceAngle);
             currAngle = lowestDistanceAngle;
             prevPosition = currentPosition;
             currentPosition = currentPosition.nextPosition(lowestDistanceAngle);
         }
         movements.add(currentPosition);
+        }
+
     }
+
 
 
     private boolean inNoFlyZone(LongLat nextPosition){

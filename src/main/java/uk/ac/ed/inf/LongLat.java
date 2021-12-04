@@ -1,7 +1,12 @@
 package uk.ac.ed.inf;
 
+import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.Polygon;
+
+import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class LongLat {
     public double longitude;
@@ -112,6 +117,31 @@ public class LongLat {
             double yMoved = dist * Math.cos(radians);
             return new LongLat(longitude+xMoved,latitude-yMoved);
         }
+    }
+
+    public boolean inNoFlyZone(LongLat nextPosition){
+        LongLat currentPosition = new LongLat(longitude,latitude);
+        List<Feature> noFlyZones = GeoJsonParser.noFlyZoneFeatures;
+        Line2D movement = new Line2D.Double(currentPosition.longitude,currentPosition.latitude,nextPosition.longitude,nextPosition.latitude);
+        for(int i =0;i<noFlyZones.size();i++){
+            if(noFlyZones.get(i).geometry()!=null){
+                Polygon polygon = (Polygon) noFlyZones.get(i).geometry();
+                if(polygon!=null){
+                    for(int j=0;j<polygon.coordinates().get(0).size()-1;j++){
+                        int nextI = j+1;
+                        List<Double> coordinates1 = polygon.coordinates().get(0).get(j).coordinates();
+                        List<Double> coordinates2 = polygon.coordinates().get(0).get(nextI).coordinates();
+                        Line2D edge = new Line2D.Double(coordinates1.get(0),coordinates1.get(1),coordinates2.get(0),coordinates2.get(1));
+                        if(movement.intersectsLine(edge)){
+                            return true;
+                        }
+                    }
+
+                }
+
+            }
+        }
+        return false;
     }
 
 

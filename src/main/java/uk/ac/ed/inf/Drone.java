@@ -9,8 +9,8 @@ import java.util.HashSet;
 import java.util.List;
 
 public class Drone {
-
-    public LongLat currentPosition = new LongLat(-3.186874,55.944494);
+    public static LongLat appleton = new LongLat(-3.186874,55.944494);
+    public LongLat currentPosition = appleton;
     public LongLat prevPosition ;
     public int currAngle =0;
     public static ArrayList<LongLat> movements = new ArrayList<>();
@@ -61,7 +61,7 @@ public class Drone {
         while(!currentPosition.closeTo(targetPosition)){
             LongLat nextPostWithCurrAngle = currentPosition.nextPosition(currAngle);
             double distanceToTargetPos = currentPosition.distanceTo(targetPosition);
-            if(!inNoFlyZone(nextPostWithCurrAngle) && nextPostWithCurrAngle.isConfined()&& (distanceToTargetPos>=nextPostWithCurrAngle.distanceTo(targetPosition))&&!coordinatesVisited.containsValue(nextPostWithCurrAngle)){
+            if(!inNoFlyZone(nextPostWithCurrAngle) && nextPostWithCurrAngle.isConfined()&& (distanceToTargetPos>nextPostWithCurrAngle.distanceTo(targetPosition))){
                 if(!coordinatesVisited.containsValue(nextPostWithCurrAngle)){
                     prevPosition = currentPosition;
                     currentPosition = nextPostWithCurrAngle;
@@ -81,7 +81,7 @@ public class Drone {
                 for(int i=1;i<36;i++){
                     int newAngle = (currAngle + (i*10)) %360;
                     LongLat newPos = currentPosition.nextPosition(newAngle);
-                    if(!inNoFlyZone(newPos) && newPos.isConfined() && (newPos.distanceTo(targetPosition)<=lowestDistance) && newPos.latitude != prevPosition.latitude
+                    if(!inNoFlyZone(newPos) && newPos.isConfined() && (newPos.distanceTo(targetPosition)<lowestDistance) && newPos.latitude != prevPosition.latitude
                             && newPos.longitude!= prevPosition.longitude & !coordinatesVisited.containsValue(newPos)){
                        //System.out.println(i);
     //                    System.out.println("prevPos: "+prevPosition.longitude+","+prevPosition.latitude);
@@ -121,7 +121,7 @@ public class Drone {
             //System.out.println("poly: "+i);
             // check if it crosses a polygon edge
             //System.out.println(noFlyZones.get(i).geometry().type());
-            if(noFlyZones.get(i).geometry()!=null && noFlyZones.get(i).geometry().type().equals("Polygon")){
+            if(noFlyZones.get(i).geometry()!=null){
                 Polygon polygon = (Polygon) noFlyZones.get(i).geometry();
                 if(polygon!=null){
                     for(int j=0;j<polygon.coordinates().get(0).size()-1;j++){
@@ -139,20 +139,6 @@ public class Drone {
 
                 }
 
-            }
-            //checks if it crosses a linestring edge
-            else if(noFlyZones.get(i).geometry()!=null && noFlyZones.get(i).geometry().type().equals("LineString")){
-
-                LineString lineString = (LineString) noFlyZones.get(i).geometry();
-                if(lineString!=null){
-                    for(int j=0;j<lineString.coordinates().size()-1;j++){
-//                        System.out.println("linestring coord: "+ lineString.coordinates().get(j));
-                        Line2D edge = new Line2D.Double(lineString.coordinates().get(j).longitude(),lineString.coordinates().get(j).latitude(),lineString.coordinates().get(j+1).longitude(),lineString.coordinates().get(j+1).latitude());
-                        if(movement.intersectsLine(edge)){
-                            return true;
-                        }
-                    }
-                }
             }
         }
         return false;

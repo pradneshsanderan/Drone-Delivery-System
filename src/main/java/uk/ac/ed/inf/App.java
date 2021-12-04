@@ -26,7 +26,7 @@ public class App
         GeoJsonParser.getNoFlyZones();
         GeoJsonParser.getLandmarks();
         Drone drone = new Drone();
-        System.out.println(Orders.orderNos);
+
         while(!Orders.orderNos.isEmpty()){
             String order = drone.closestOrder()[0];
             System.out.println(order);
@@ -34,17 +34,7 @@ public class App
             //goes to each shop to pick up orders
             LongLat nextPos = new LongLat(Orders.pickUpCoordinates.get(order).get(shop)[0],Orders.pickUpCoordinates.get(order).get(shop)[1]);
             System.out.println("pick up");
-                //System.out.println("moving");
             drone.move(nextPos);
-//                List<Point> pointList = new ArrayList<>();
-//                pointList.add(Point.fromLngLat(-3.186874,55.944494));
-//                for(int i=0;i<Drone.movements.size();i++){
-//                    pointList.add(Point.fromLngLat(Drone.movements.get(i).longitude,Drone.movements.get(i).latitude));
-//                }
-//
-//                Geometry geometry = (Geometry) LineString.fromLngLats(pointList);
-//                FeatureCollection fc = FeatureCollection.fromFeature(Feature.fromGeometry(geometry));
-//                System.out.println(fc.toJson());
             if(Orders.pickUpCoordinates.get(order).size()==2){
                 int nextShop =0;
                 if(shop==0){
@@ -52,17 +42,7 @@ public class App
                 }
                 LongLat nextPos1 = new LongLat(Orders.pickUpCoordinates.get(order).get(nextShop)[0],Orders.pickUpCoordinates.get(order).get(nextShop)[1]);
                 System.out.println("pick up");
-                    //System.out.println("moving");
                 drone.move(nextPos1);
-//                    List<Point> pointList = new ArrayList<>();
-//                    pointList.add(Point.fromLngLat(-3.186874,55.944494));
-//                    for(int i=0;i<Drone.movements.size();i++){
-//                        pointList.add(Point.fromLngLat(Drone.movements.get(i).longitude,Drone.movements.get(i).latitude));
-//                    }
-//
-//                    Geometry geometry = (Geometry) LineString.fromLngLats(pointList);
-//                    FeatureCollection fc = FeatureCollection.fromFeature(Feature.fromGeometry(geometry));
-//                    System.out.println(fc.toJson());
 
             }
 
@@ -70,15 +50,6 @@ public class App
             System.out.println("Delivery");
             LongLat deliveryPos = new LongLat(Orders.deliveryCoordinates.get(order)[0],Orders.deliveryCoordinates.get(order)[1]);
             drone.move(deliveryPos);
-//                List<Point> pointList = new ArrayList<>();
-//                pointList.add(Point.fromLngLat(-3.186874,55.944494));
-//                for(int i=0;i<Drone.movements.size();i++){
-//                    pointList.add(Point.fromLngLat(Drone.movements.get(i).longitude,Drone.movements.get(i).latitude));
-//                }
-//
-//                Geometry geometry = (Geometry) LineString.fromLngLats(pointList);
-//                FeatureCollection fc = FeatureCollection.fromFeature(Feature.fromGeometry(geometry));
-//                System.out.println(fc.toJson());
             Orders.orderNos.remove(order);
         }
 

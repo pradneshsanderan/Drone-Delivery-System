@@ -3,6 +3,7 @@ package uk.ac.ed.inf;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.Polygon;
 
+import java.awt.*;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -144,6 +145,15 @@ public class LongLat {
         return false;
     }
 
-
+//    public boolean inPolygon(){
+//        List<Feature> noFlyZones = GeoJsonParser.noFlyZoneFeatures;
+//        for(int i =0;i<noFlyZones.size();i++){
+//            if(noFlyZones.get(i).geometry()!=null){
+//                Polygon polygon = (Polygon) noFlyZones.get(i).geometry();
+//                Polygon
+//
+//            }
+//        }
+//    }
 
 }

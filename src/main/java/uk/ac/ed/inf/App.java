@@ -26,39 +26,50 @@ public class App
         GeoJsonParser.getNoFlyZones();
         GeoJsonParser.getLandmarks();
         Drone drone = new Drone();
-
+        ArrayList<LongLat> n =new ArrayList<>();
+        //n.add(Drone.appleton);
+        drone.setCurrPosition(Drone.appleton);
+        System.out.println(Orders.orderNos);
+        Orders.orderNos.remove(0);
         while(!Orders.orderNos.isEmpty()){
             String order = drone.closestOrder()[0];
-            System.out.println(order);
             int shop = Integer.parseInt(drone.closestOrder()[1]);
             //goes to each shop to pick up orders
             LongLat nextPos = new LongLat(Orders.pickUpCoordinates.get(order).get(shop)[0],Orders.pickUpCoordinates.get(order).get(shop)[1]);
             System.out.println("pick up");
-            drone.move(nextPos);
+             ArrayList<LongLat> k = AStarPathFinder.setup(drone.currentPosition,nextPos);
+             n.addAll(k);
+
+            drone.setCurrPosition(n.get(n.size()-1));
+            //drone.move(nextPos);
             if(Orders.pickUpCoordinates.get(order).size()==2){
                 int nextShop =0;
                 if(shop==0){
                     nextShop = 1;
                 }
                 LongLat nextPos1 = new LongLat(Orders.pickUpCoordinates.get(order).get(nextShop)[0],Orders.pickUpCoordinates.get(order).get(nextShop)[1]);
-                System.out.println("pick up");
-                drone.move(nextPos1);
+                System.out.println("pick up 2");
+                drone.setCurrPosition(n.get(n.size()-1));
+                ArrayList<LongLat> m = AStarPathFinder.setup(drone.currentPosition,nextPos1);
+                n.addAll(m);
+                //drone.move(nextPos1);
 
             }
-
+            LongLat newPos = n.get(n.size()-1);
             //moves to delivery
             System.out.println("Delivery");
             LongLat deliveryPos = new LongLat(Orders.deliveryCoordinates.get(order)[0],Orders.deliveryCoordinates.get(order)[1]);
-            drone.move(deliveryPos);
+            ArrayList<LongLat> d = AStarPathFinder.setup(newPos,deliveryPos);
+            n.addAll(d);
+            drone.setCurrPosition(n.get(n.size()-1));
             Orders.orderNos.remove(order);
         }
 
         List<Point> pointList = new ArrayList<>();
-        pointList.add(Point.fromLngLat(-3.186874,55.944494));
-        for(int i=0;i<Drone.movements.size();i++){
-            pointList.add(Point.fromLngLat(Drone.movements.get(i).longitude,Drone.movements.get(i).latitude));
+        for(int i=0;i<n.size();i++){
+            pointList.add(Point.fromLngLat(n.get(i).longitude,n.get(i).latitude));
         }
-        pointList.add(Point.fromLngLat(-3.186874,55.944494));
+        System.out.println(pointList.size());
         Geometry geometry = (Geometry) LineString.fromLngLats(pointList);
         FeatureCollection fc = FeatureCollection.fromFeature(Feature.fromGeometry(geometry));
         System.out.println(Drone.movements.size());

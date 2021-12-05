@@ -10,12 +10,14 @@ import java.util.List;
 
 public class Drone {
     public static LongLat appleton = new LongLat(-3.186874,55.944494);
-    public LongLat currentPosition = appleton;
+    public LongLat currentPosition;
     public LongLat prevPosition ;
     public int currAngle =0;
     public static ArrayList<LongLat> movements = new ArrayList<>();
     public static ArrayList<Double> distances = new ArrayList<>();
-
+    public  void setCurrPosition(LongLat curr){
+        currentPosition = curr;
+    }
 //    public void move(LongLat targetPosition){
 ////        System.out.println( currAngle);
 //        LongLat nextPostWithCurrAngle = currentPosition.nextPosition(currAngle);

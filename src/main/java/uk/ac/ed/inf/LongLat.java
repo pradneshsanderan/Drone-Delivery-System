@@ -1,17 +1,28 @@
 package uk.ac.ed.inf;
 
 import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
 
 import java.awt.*;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
+import com.mapbox.turf.TurfJoins;
 import java.util.HashMap;
 import java.util.List;
 
 public class LongLat {
     public double longitude;
     public double latitude;
+    public Point point;
+    public static double oneMove = 0.00015;
+    //the coordinates of the edges of the confinement area
+    public static  double confAreaRight = -3.184319;
+    public static  double confAreaLeft = -3.192473;
+    public static  double confAreaTop = 55.946233;
+    public static  double confAreaBottom = 55.942617;
+    public static LongLat appleton = new LongLat(-3.186874,55.944494);
 
     /**
      * The Constructor for the LongLat class which accepts 2 double precision numbers which are the
@@ -22,6 +33,7 @@ public class LongLat {
     LongLat(double longitude,double latitude){
         this.longitude = longitude;
         this.latitude = latitude;
+        this.point = Point.fromLngLat(this.longitude,this.latitude);
     }
 
     /**
@@ -29,11 +41,7 @@ public class LongLat {
      * @return true if the drone is within the confinement area and false otherwise
      */
     public boolean isConfined(){
-        //the coordinates of the edges of the confinement area
-        double confAreaRight = -3.184319;
-        double confAreaLeft = -3.192473;
-        double confAreaTop = 55.946233;
-        double confAreaBottom = 55.942617;
+
         //checks if the drone is in the confinement area.
         return ((longitude< confAreaRight && longitude> confAreaLeft) && (latitude< confAreaTop && latitude> confAreaBottom));
     }
@@ -144,16 +152,26 @@ public class LongLat {
         }
         return false;
     }
+    public int angleDirectionTo(LongLat nextNode){
+        double angleDirection = Math.toDegrees(Math.atan2((nextNode.longitude-longitude),(nextNode.latitude-latitude)));
+        if(angleDirection<0){
+            angleDirection = angleDirection +360;
+        }
+        return (int) Math.round(angleDirection);
+    }
+    public  boolean inNoFlyPolygon(){
+        List<Feature> zones= GeoJsonParser.noFlyZoneFeatures;
 
-//    public boolean inPolygon(){
-//        List<Feature> noFlyZones = GeoJsonParser.noFlyZoneFeatures;
-//        for(int i =0;i<noFlyZones.size();i++){
-//            if(noFlyZones.get(i).geometry()!=null){
-//                Polygon polygon = (Polygon) noFlyZones.get(i).geometry();
-//                Polygon
-//
-//            }
-//        }
-//    }
+        for(Feature zone :zones){
+            Polygon currzone = (Polygon) zone.geometry();
+            if(currzone!=null){
+                if(TurfJoins.inside(point,currzone)){
+                    return true;
+                }
+            }
+
+        }
+        return false;
+    }
 
 }

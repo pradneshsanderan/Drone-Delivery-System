@@ -1,15 +1,17 @@
 package uk.ac.ed.inf;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
+import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
+import org.jgrapht.alg.shortestpath.AStarShortestPath;
+import org.jgrapht.alg.interfaces.AStarAdmissibleHeuristic;
+
 import org.jgrapht.graph.DefaultUndirectedWeightedGraph;
 import org.w3c.dom.Node;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class HexGraph {
+
     private static final double heightOfTriangle = Math.sqrt(Math.pow(LongLat.oneMove,2) - Math.pow(LongLat.oneMove/2,2));
     private static boolean shiftedRow(){
         double appletonLat = LongLat.appleton.latitude;
@@ -123,47 +125,148 @@ public class HexGraph {
         HashMap<String,LongLat> deliveryNodes = new HashMap<>();
         for(String order : orderNos){
             LongLat currentOrder = new LongLat(deliveryCoordinates.get(order)[0],deliveryCoordinates.get(order)[1]);
+            boolean found = false;
             for (LongLat nodes : hexGraph.vertexSet()) {
                 if (currentOrder.closeTo(nodes)) {
                     deliveryNodes.put(order, nodes);
+                    found = true;
                     break;
                 }
             }
+            if(!found){
+                System.out.println("cant find del"+ order);
+            }
+
         }
         return deliveryNodes;
     }
+
+
+
     public static HashMap<String,ArrayList<LongLat>> getPickUpNodes(Graph<LongLat,NodeEdges> hexGraph){
         ArrayList<String> orderNos = Orders.orderNos;
         HashMap<String, ArrayList<double[]>> pickUpCoordinates= Orders.pickUpCoordinates;
         HashMap<String,ArrayList<LongLat>> pickUpNodes = new HashMap<>();
         for(String order:orderNos){
-            if(pickUpCoordinates.get(order).size()==1){
-                double[] currCoords = pickUpCoordinates.get(order).get(0);
-                LongLat currentCoordinate = new LongLat(currCoords[0],currCoords[1]);
-                for(LongLat nodes:hexGraph.vertexSet()){
-                    if(currentCoordinate.closeTo(nodes)){
-                        ArrayList<LongLat> n = new ArrayList<>();
-                        n.add(currentCoordinate);
-                        pickUpNodes.put(order,n);
-                        break;
-                    }
-                }
+           ArrayList<double[]> pickUpShops = pickUpCoordinates.get(order);
+           ArrayList<LongLat> nodes = new ArrayList<>();
+           for (double[] shops:pickUpShops){
+               boolean found = false;
+               LongLat curr = new LongLat(shops[0],shops[1]);
+               for (LongLat node : hexGraph.vertexSet()) {
+                   if (curr.closeTo(node)) {
+                       nodes.add(node);
+                       found = true;
+                       break;
+                   }
+               }
+               if(!found){
+                   System.out.println("not found "+ order);
+               }
+           }
+           pickUpNodes.put(order,nodes);
+        }
+        return pickUpNodes;
+    }
+    private static LongLat getAppleton(Graph<LongLat,NodeEdges> g){
+        for (LongLat nodes : g.vertexSet()) {
+            if (LongLat.appleton.closeTo(nodes)) {
+                return nodes;
+
+            }
+        }
+        return null;
+    }
+    public static List<LongLat> getRoute(){
+        Graph<LongLat,NodeEdges> g = HexGraph.genValidHexGraph();
+        HashMap<String,LongLat> delivery =HexGraph.getDeliveryNodes(g);
+        HashMap<String,ArrayList<LongLat>> pickup = getPickUpNodes(g);
+        ArrayList<String> orders = greedyApproach(g,pickup,delivery);
+        System.out.println(orders);
+        LongLat appleton = getAppleton(g);
+
+        List<LongLat> movements = new ArrayList<>();
+        DijkstraShortestPath<LongLat,NodeEdges> d= new DijkstraShortestPath<LongLat,NodeEdges>(g);
+//        AStarAdmissibleHeuristic<LongLat> n= new AStarAdmissibleHeuristic<LongLat>() {
+//            @Override
+//            public double getCostEstimate(LongLat longLat, LongLat v1) {
+//                return longLat.distanceTo(v1);
+//            }
+//        };
+//
+//        AStarShortestPath<LongLat,NodeEdges> aStarShortestPath = new AStarShortestPath<LongLat,NodeEdges>(g,n);
+
+        if(pickup.get(orders.get(0)).size()==1){
+            movements = d.getPath(appleton,pickup.get(orders.get(0)).get(0)).getVertexList();
+            movements.addAll(d.getPath(pickup.get(orders.get(0)).get(0),delivery.get(orders.get(0))).getVertexList());
+        }
+        else{
+            movements = d.getPath(appleton,pickup.get(orders.get(0)).get(0)).getVertexList();
+            movements.addAll(d.getPath(pickup.get(orders.get(0)).get(0),pickup.get(orders.get(0)).get(1)).getVertexList());
+            movements.addAll(d.getPath(pickup.get(orders.get(0)).get(1),delivery.get(orders.get(0))).getVertexList());
+        }
+        for(int i=1;i<orders.size();i++){
+            if(pickup.get(orders.get(i)).size()==1){
+                movements.addAll(d.getPath(delivery.get(orders.get(i-1)),pickup.get(orders.get(i)).get(0)).getVertexList());
+                movements.addAll(d.getPath(pickup.get(orders.get(i)).get(0),delivery.get(orders.get(i))).getVertexList());
             }
             else{
-                ArrayList<LongLat> n = new ArrayList<>();
-                for( double[] coord : pickUpCoordinates.get(order)){
-                    LongLat currentCoordinate = new LongLat(coord[0],coord[1]);
-                    innerLoop:
-                    for(LongLat nodes:hexGraph.vertexSet()){
-                        if(currentCoordinate.closeTo(nodes)){
-                            n.add(currentCoordinate);
-                            break innerLoop;
+                movements.addAll(d.getPath(delivery.get(orders.get(i-1)),pickup.get(orders.get(i)).get(0)).getVertexList());
+                movements.addAll(d.getPath(pickup.get(orders.get(i)).get(0),pickup.get(orders.get(i)).get(1)).getVertexList());
+                movements.addAll(d.getPath(pickup.get(orders.get(i)).get(1),delivery.get(orders.get(i))).getVertexList());
+            }
+        }
+        movements.addAll(d.getPath(delivery.get(orders.get(orders.size()-1)),appleton).getVertexList());
+        return movements;
+    }
+    public static ArrayList<String> greedyApproach(Graph<LongLat,NodeEdges> g,HashMap<String,ArrayList<LongLat>> pickUpNodes,HashMap<String,LongLat> deliveryNodes){
+        ArrayList<String> orders = Orders.orderNos;
+        System.out.println(orders);
+        LongLat appleton = getAppleton(g);
+        if(appleton == null){
+            System.out.println("Could not associate start location with a node on the map");
+            appleton = LongLat.appleton;
+        }
+        ArrayList<String> sortedOrders = new ArrayList<>();
+        String closest = null;
+        int ind = 0;
+        double dist = Double.MAX_VALUE;
+        for(String order:orders){
+            ArrayList<LongLat> currentNodes = pickUpNodes.get(order);
+            for(int i=0;i<currentNodes.size();i++){
+                if(appleton.distanceTo(currentNodes.get(i))<dist){
+                    closest = order;
+                    dist = appleton.distanceTo(currentNodes.get(i));
+                    ind=i;
+                }
+            }
+        }
+        sortedOrders.add(closest);
+        while (sortedOrders.size()!=orders.size()){
+            closest = null;
+            ind = 0;
+            dist = Double.MAX_VALUE;
+            for(String order:orders){
+                if(!sortedOrders.contains(order)){
+                    ArrayList<LongLat> currentNodes = pickUpNodes.get(order);
+                    for(int i=0;i<currentNodes.size();i++){
+                        if(deliveryNodes.get(sortedOrders.get(sortedOrders.size()-1)).distanceTo(currentNodes.get(i))<dist){
+                            closest = order;
+                            dist = deliveryNodes.get(sortedOrders.get(sortedOrders.size()-1)).distanceTo(currentNodes.get(i));
+                            ind=i;
                         }
                     }
                 }
-                pickUpNodes.put(order,n);
+
             }
+            sortedOrders.add(closest);
         }
-        return pickUpNodes;
+        System.out.println(Orders.orderNos);
+        return sortedOrders;
+    }
+    public static ArrayList<String> randomAppraoch(){
+        ArrayList<String> random = new ArrayList<>(Orders.orderNos);
+        Collections.shuffle(random);
+        return random;
     }
 }

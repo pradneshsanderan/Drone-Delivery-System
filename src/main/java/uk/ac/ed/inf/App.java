@@ -29,30 +29,9 @@ public class App
         Orders.getCoordinatesAndOrders();
         GeoJsonParser.getNoFlyZones();
         GeoJsonParser.getLandmarks();
-        Graph<LongLat,NodeEdges> g = HexGraph.genValidHexGraph();
-        HashMap<String,LongLat> n =HexGraph.getDeliveryNodes(g);
-        ArrayList<LongLat> m = new ArrayList<>();
-        System.out.println(Orders.orderNos);
-        for(String order:Orders.orderNos){
-            m.add(n.get(order));
-        }
-        DijkstraShortestPath<LongLat,NodeEdges> d
-                = new DijkstraShortestPath<LongLat,NodeEdges>(g);
-        LongLat start = LongLat.appleton;
-        LongLat end = m.get(0);
-        //List<LongLat> shortestPath = d.getPath(start,end).getVertexList();
-        List<LongLat> moves = new ArrayList<>();
-        for(int i=1;i<m.size();i++){
-            start =m.get(i-1);
-            end = m.get(i);
-            List<LongLat> shortestPath1 = d.getPath(start,end).getVertexList();
-            moves.addAll(shortestPath1);
-        }
-//        start = m.get(m.size()-1);
-//        end = LongLat.appleton;
-//        List<LongLat> shortestPath2 = d.getPath(start,end).getVertexList();
-//        moves.addAll(shortestPath2);
+        List<LongLat> moves = HexGraph.getRoute();
         List<Point> pointList = new ArrayList<>();
+
         for (LongLat move : moves) {
             pointList.add(move.point);
         }
@@ -62,7 +41,7 @@ public class App
         System.out.println(fc.toJson());
         System.out.println("done");
     }
-
+//sort drone locations by distance from each start and end
 }
 
 

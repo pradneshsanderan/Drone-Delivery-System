@@ -119,6 +119,29 @@ public class HexGraph {
         }
         return g;
     }
+//
+//    public static Graph<LongLat[],NodeEdges> genValidHexGraphtsp(){
+//        Graph<LongLat, NodeEdges> droneHexGraph = genDroneHexGraph();
+//        DefaultUndirectedWeightedGraph<LongLat[],NodeEdges> g = new DefaultUndirectedWeightedGraph<LongLat[],NodeEdges>(NodeEdges.class);
+//        Set<LongLat> nodes = droneHexGraph.vertexSet();
+//        Set<NodeEdges> edges = droneHexGraph.edgeSet();
+//        for(LongLat node:nodes){
+//            if(!node.inNoFlyPolygon() && node.isConfined()){
+//                g.addVertex(node);
+//            }
+//        }
+//        for(NodeEdges edge:edges){
+//            LongLat node1 = edge.node1;
+//            LongLat node2 = edge.node2;
+//            if(node1.isConfined()&& node2.isConfined()&&
+//                    !node1.inNoFlyPolygon()&&!node2.inNoFlyPolygon() &&
+//                    !node1.inNoFlyZone(node2) && !node2.inNoFlyZone(node1)){
+//                g.addEdge(edge.node1,edge.node2,edge);
+//                g.setEdgeWeight(edge,1);
+//            }
+//        }
+//        return g;
+//    }
     public static HashMap<String,LongLat> getDeliveryNodes(Graph<LongLat,NodeEdges> hexGraph){
         ArrayList<String> orderNos = Orders.orderNos;
         HashMap<String,double[]> deliveryCoordinates = Orders.deliveryCoordinates;
@@ -181,7 +204,7 @@ public class HexGraph {
         Graph<LongLat,NodeEdges> g = HexGraph.genValidHexGraph();
         HashMap<String,LongLat> delivery =HexGraph.getDeliveryNodes(g);
         HashMap<String,ArrayList<LongLat>> pickup = getPickUpNodes(g);
-        ArrayList<String> orders = greedyApproach(g,pickup,delivery);
+        ArrayList<String> orders = nearestNeighbourApproach(g,pickup,delivery);
         System.out.println(orders);
         LongLat appleton = getAppleton(g);
 
@@ -219,7 +242,7 @@ public class HexGraph {
         movements.addAll(d.getPath(delivery.get(orders.get(orders.size()-1)),appleton).getVertexList());
         return movements;
     }
-    public static ArrayList<String> greedyApproach(Graph<LongLat,NodeEdges> g,HashMap<String,ArrayList<LongLat>> pickUpNodes,HashMap<String,LongLat> deliveryNodes){
+    public static ArrayList<String> nearestNeighbourApproach(Graph<LongLat,NodeEdges> g,HashMap<String,ArrayList<LongLat>> pickUpNodes,HashMap<String,LongLat> deliveryNodes){
         ArrayList<String> orders = Orders.orderNos;
         System.out.println(orders);
         LongLat appleton = getAppleton(g);
@@ -268,5 +291,28 @@ public class HexGraph {
         ArrayList<String> random = new ArrayList<>(Orders.orderNos);
         Collections.shuffle(random);
         return random;
+    }
+    public static ArrayList<String> greedyApproach(HashMap<String,ArrayList<String>> items){
+        HashMap<Integer,String> prices = new HashMap<>();
+        ArrayList<String> sortedOrders = new ArrayList<>();
+        ArrayList<String> ord = Orders.orderNos;
+        Integer[] deliveryCosts = new Integer[ord.size()];
+        Menus.getPrices();
+        HashMap<String,Integer> itemPrices = Menus.prices;
+        int i=0;
+        for(String order :ord){
+            int total =50;
+            for(String item : items.get(order)){
+                total = total + itemPrices.get(item);
+            }
+            prices.put(total,order);
+            deliveryCosts[i] = total;
+        }
+        Arrays.sort(deliveryCosts,Collections.reverseOrder());
+        for(Integer d : deliveryCosts){
+            sortedOrders.add(prices.get(d));
+            prices.remove(d);
+        }
+        return sortedOrders;
     }
 }

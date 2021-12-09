@@ -46,7 +46,7 @@ public class ApacheDatabase {
         }
         return deliveries;
     }
-    public static void createFlightPathDatabase(){
+    public static void createFlightPathDatabase(List<LongLat> moves){
         try{
             Connection conn = DriverManager.getConnection(jdbcString);
             Statement statement = conn.createStatement();
@@ -63,20 +63,33 @@ public class ApacheDatabase {
                             "angle integer, "+
                             "toLongitude double, "+
                             "toLatitude double)");
-            PreparedStatement psFlightPaths = conn.prepareStatement("insert into deliveries values (?, ?, ?, ?, ?, ?)");
-            ArrayList<FlightPath> flightPaths = getDeliveryList();
-            for (Deliveries delivery : deliveries) {
-                psDeliveries.setString(1, delivery.orderNo);
-                psDeliveries.setString(2, delivery.deliveredTo);
-                psDeliveries.setInt(3, delivery.costInPence);
-                psDeliveries.execute();
+            PreparedStatement psFlightPaths = conn.prepareStatement("insert into flightpath values (?, ?, ?, ?, ?, ?)");
+            ArrayList<FlightPath> flightPaths = getFlightPaths(moves);
+            for (FlightPath flightPath : flightPaths) {
+                psFlightPaths.setString(1, flightPath.orderNo);
+                psFlightPaths.setDouble(2, flightPath.fromLongitude);
+                psFlightPaths.setDouble(3, flightPath.fromLatitude);
+                psFlightPaths.setInt(4, flightPath.angle);
+                psFlightPaths.setDouble(5, flightPath.toLongitude);
+                psFlightPaths.setDouble(6, flightPath.toLatitude);
+                psFlightPaths.execute();
             }
         }catch(java.sql.SQLException e){
             e.printStackTrace();
         }
     }
-    private static ArrayList<FlightPath> flightPaths (List<LongLat> moves){
-
+    private static ArrayList<FlightPath> getFlightPaths (List<LongLat> moves){
+        ArrayList<FlightPath> flightPaths = new ArrayList<>();
+        for(int i=1;i<moves.size();i++){
+            FlightPath f = new FlightPath();
+            f.fromLatitude = moves.get(i-1).latitude;
+            f.fromLongitude = moves.get(i-1).longitude;
+            f.angle=moves.get(i-1).angleDirectionTo(moves.get(i));
+            f.toLatitude = moves.get(i).latitude;
+            f.toLongitude = moves.get(i).longitude;
+            flightPaths.add(f);
+        }
+        return flightPaths;
     }
 
 }

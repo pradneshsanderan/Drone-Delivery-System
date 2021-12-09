@@ -135,7 +135,7 @@ public class Menus {
 
 
     }
-    public static int getTotalChargeForAnOrder(ArrayList<String> OrderNos){
+    public static int getTotalChargeForOrders(ArrayList<String> OrderNos){
         int total =0;
         int standardDeliveryCharge =50;
         for(String order :OrderNos){

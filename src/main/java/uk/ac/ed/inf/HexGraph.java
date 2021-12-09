@@ -13,6 +13,7 @@ import java.util.*;
 public class HexGraph {
     public static ArrayList<String> OrdersCompleted = new ArrayList<>();
     private static final double heightOfTriangle = Math.sqrt(Math.pow(LongLat.oneMove,2) - Math.pow(LongLat.oneMove/2,2));
+    public static ArrayList<Integer> HoverLocation= new ArrayList<>();
     private static boolean shiftedRow(){
         double appletonLat = LongLat.appleton.latitude;
         int rowsCounter =0;
@@ -119,29 +120,7 @@ public class HexGraph {
         }
         return g;
     }
-//
-//    public static Graph<LongLat[],NodeEdges> genValidHexGraphtsp(){
-//        Graph<LongLat, NodeEdges> droneHexGraph = genDroneHexGraph();
-//        DefaultUndirectedWeightedGraph<LongLat[],NodeEdges> g = new DefaultUndirectedWeightedGraph<LongLat[],NodeEdges>(NodeEdges.class);
-//        Set<LongLat> nodes = droneHexGraph.vertexSet();
-//        Set<NodeEdges> edges = droneHexGraph.edgeSet();
-//        for(LongLat node:nodes){
-//            if(!node.inNoFlyPolygon() && node.isConfined()){
-//                g.addVertex(node);
-//            }
-//        }
-//        for(NodeEdges edge:edges){
-//            LongLat node1 = edge.node1;
-//            LongLat node2 = edge.node2;
-//            if(node1.isConfined()&& node2.isConfined()&&
-//                    !node1.inNoFlyPolygon()&&!node2.inNoFlyPolygon() &&
-//                    !node1.inNoFlyZone(node2) && !node2.inNoFlyZone(node1)){
-//                g.addEdge(edge.node1,edge.node2,edge);
-//                g.setEdgeWeight(edge,1);
-//            }
-//        }
-//        return g;
-//    }
+
     public static HashMap<String,LongLat> getDeliveryNodes(Graph<LongLat,NodeEdges> hexGraph){
         ArrayList<String> orderNos = Orders.orderNos;
         HashMap<String,double[]> deliveryCoordinates = Orders.deliveryCoordinates;
@@ -219,11 +198,15 @@ public class HexGraph {
 //
 //        AStarShortestPath<LongLat,NodeEdges> aStarShortestPath = new AStarShortestPath<LongLat,NodeEdges>(g,n);
         int movesLeft = 1500;
+        HoverLocation.add(0);
         if(pickup.get(orders.get(0)).size()==1){
             movesLeft--;
+            assert appleton != null;
             movements = d.getPath(appleton,pickup.get(orders.get(0)).get(0)).getVertexList();
+            HoverLocation.add(movements.size());
             movesLeft--;
             movements.addAll(d.getPath(pickup.get(orders.get(0)).get(0),delivery.get(orders.get(0))).getVertexList());
+            HoverLocation.add(movements.size());
             movesLeft--;
             int pickUpmoves =d.getPath(appleton,pickup.get(orders.get(0)).get(0)).getVertexList().size();
             int deliverMoves = d.getPath(pickup.get(orders.get(0)).get(0),delivery.get(orders.get(0))).getVertexList().size();
@@ -232,10 +215,16 @@ public class HexGraph {
         else{
             movesLeft--;
             movements = d.getPath(appleton,pickup.get(orders.get(0)).get(0)).getVertexList();
+
+            HoverLocation.add(movements.size());
             movesLeft--;
             movements.addAll(d.getPath(pickup.get(orders.get(0)).get(0),pickup.get(orders.get(0)).get(1)).getVertexList());
+
+            HoverLocation.add(movements.size());
             movesLeft--;
             movements.addAll(d.getPath(pickup.get(orders.get(0)).get(1),delivery.get(orders.get(0))).getVertexList());
+
+            HoverLocation.add(movements.size());
             movesLeft--;
             int pickUpMoves = d.getPath(appleton,pickup.get(orders.get(0)).get(0)).getVertexList().size() + d.getPath(pickup.get(orders.get(0)).get(0),pickup.get(orders.get(0)).get(1)).getVertexList().size();
             int deliverMoves = d.getPath(pickup.get(orders.get(0)).get(1),delivery.get(orders.get(0))).getVertexList().size();
@@ -251,7 +240,11 @@ public class HexGraph {
                 int hoverMoves = 2;
                 if(movesLeft-hoverMoves-pickUpMoves-deliveryMove-returnHomeMoves>=0){
                     movements.addAll(d.getPath(delivery.get(orders.get(i-1)),pickup.get(orders.get(i)).get(0)).getVertexList());
+
+                    HoverLocation.add(movements.size());
                     movements.addAll(d.getPath(pickup.get(orders.get(i)).get(0),delivery.get(orders.get(i))).getVertexList());
+
+                    HoverLocation.add(movements.size());
                     movesLeft = movesLeft-pickUpMoves-deliveryMove-hoverMoves;
                     pointer =i;
                     OrdersCompleted.add(orders.get(i));
@@ -265,8 +258,14 @@ public class HexGraph {
                 int hoverMoves = 3;
                 if(movesLeft-hoverMoves-pickUpMoves-deliveryMove-returnHomeMoves>=0){
                     movements.addAll(d.getPath(delivery.get(orders.get(i-1)),pickup.get(orders.get(i)).get(0)).getVertexList());
+
+                    HoverLocation.add(movements.size());
                     movements.addAll(d.getPath(pickup.get(orders.get(i)).get(0),pickup.get(orders.get(i)).get(1)).getVertexList());
+
+                    HoverLocation.add(movements.size());
                     movements.addAll(d.getPath(pickup.get(orders.get(i)).get(1),delivery.get(orders.get(i))).getVertexList());
+
+                    HoverLocation.add(movements.size());
                     movesLeft = movesLeft-pickUpMoves-deliveryMove-hoverMoves;
                     pointer=i;
                     OrdersCompleted.add(orders.get(i));
@@ -275,6 +274,7 @@ public class HexGraph {
             }
         }
         movements.addAll(d.getPath(delivery.get(orders.get(pointer)),appleton).getVertexList());
+        HoverLocation.add(movements.size());
         return movements;
     }
     public static ArrayList<String> nearestNeighbourApproach(Graph<LongLat,NodeEdges> g,HashMap<String,ArrayList<LongLat>> pickUpNodes,HashMap<String,LongLat> deliveryNodes){

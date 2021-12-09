@@ -14,6 +14,7 @@ public class HexGraph {
     public static ArrayList<String> OrdersCompleted = new ArrayList<>();
     private static final double heightOfTriangle = Math.sqrt(Math.pow(LongLat.oneMove,2) - Math.pow(LongLat.oneMove/2,2));
     public static ArrayList<Integer> HoverLocation= new ArrayList<>();
+    public static HashMap<Integer,String> OrderNumberChanges = new HashMap<>();
     private static boolean shiftedRow(){
         double appletonLat = LongLat.appleton.latitude;
         int rowsCounter =0;
@@ -199,6 +200,7 @@ public class HexGraph {
 //        AStarShortestPath<LongLat,NodeEdges> aStarShortestPath = new AStarShortestPath<LongLat,NodeEdges>(g,n);
         int movesLeft = 1500;
         HoverLocation.add(0);
+        OrderNumberChanges.put(0,orders.get(0));
         if(pickup.get(orders.get(0)).size()==1){
             movesLeft--;
             assert appleton != null;
@@ -239,6 +241,7 @@ public class HexGraph {
                 int returnHomeMoves = d.getPath(delivery.get(orders.get(i)),appleton).getVertexList().size();
                 int hoverMoves = 2;
                 if(movesLeft-hoverMoves-pickUpMoves-deliveryMove-returnHomeMoves>=0){
+                    OrderNumberChanges.put(movements.size(),orders.get(i));
                     movements.addAll(d.getPath(delivery.get(orders.get(i-1)),pickup.get(orders.get(i)).get(0)).getVertexList());
 
                     HoverLocation.add(movements.size());
@@ -257,6 +260,7 @@ public class HexGraph {
                 int returnHomeMoves = d.getPath(delivery.get(orders.get(i)),appleton).getVertexList().size();
                 int hoverMoves = 3;
                 if(movesLeft-hoverMoves-pickUpMoves-deliveryMove-returnHomeMoves>=0){
+                    OrderNumberChanges.put(movements.size(),orders.get(i));
                     movements.addAll(d.getPath(delivery.get(orders.get(i-1)),pickup.get(orders.get(i)).get(0)).getVertexList());
 
                     HoverLocation.add(movements.size());
@@ -274,7 +278,8 @@ public class HexGraph {
             }
         }
         movements.addAll(d.getPath(delivery.get(orders.get(pointer)),appleton).getVertexList());
-        HoverLocation.add(movements.size());
+
+
         return movements;
     }
     public static ArrayList<String> nearestNeighbourApproach(Graph<LongLat,NodeEdges> g,HashMap<String,ArrayList<LongLat>> pickUpNodes,HashMap<String,LongLat> deliveryNodes){

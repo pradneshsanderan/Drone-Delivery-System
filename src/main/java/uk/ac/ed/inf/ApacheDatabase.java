@@ -80,15 +80,35 @@ public class ApacheDatabase {
     }
     private static ArrayList<FlightPath> getFlightPaths (List<LongLat> moves){
         ArrayList<FlightPath> flightPaths = new ArrayList<>();
+        ArrayList<Integer> hoverLocations = HexGraph.HoverLocation;
+        String currOrder = HexGraph.OrderNumberChanges.get(0);
         for(int i=1;i<moves.size();i++){
             FlightPath f = new FlightPath();
+            if(HexGraph.OrderNumberChanges.containsKey(i)){
+                currOrder = HexGraph.OrderNumberChanges.get(i);
+            }
+            f.orderNo = currOrder;
             f.fromLatitude = moves.get(i-1).latitude;
             f.fromLongitude = moves.get(i-1).longitude;
-            f.angle=moves.get(i-1).angleDirectionTo(moves.get(i));
+            if(hoverLocations.contains(i)){
+                f.angle=-999;
+            }
+            else{
+                f.angle=moves.get(i-1).angleDirectionTo(moves.get(i));
+            }
+
             f.toLatitude = moves.get(i).latitude;
             f.toLongitude = moves.get(i).longitude;
             flightPaths.add(f);
         }
+        FlightPath f = new FlightPath();
+        f.orderNo=currOrder;
+        f.toLongitude = moves.get(moves.size()-1).longitude;
+        f.toLatitude = moves.get(moves.size()-1).latitude;
+        f.fromLongitude = moves.get(moves.size()-1).longitude;
+        f.fromLatitude = moves.get(moves.size()-1).latitude;
+        f.angle = -999;
+        flightPaths.add(f);
         return flightPaths;
     }
 

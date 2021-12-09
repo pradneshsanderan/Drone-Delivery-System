@@ -1,18 +1,16 @@
 package uk.ac.ed.inf;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.mapbox.geojson.Feature;
-import com.mapbox.geojson.FeatureCollection;
+import com.mapbox.geojson.*;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class GeoJsonParser {
@@ -69,4 +67,26 @@ public class GeoJsonParser {
             System.out.println("InterruptedException " + e.getMessage());
         }
     }
+    public static String movesToFCCollection(List<LongLat> moves){
+        List<Point> pointList = new ArrayList<>();
+        for (LongLat move : moves) {
+            pointList.add(move.point);
+        }
+        Geometry geometry = (Geometry) LineString.fromLngLats(pointList);
+        FeatureCollection fc = FeatureCollection.fromFeature(Feature.fromGeometry(geometry));
+        return fc.toJson();
+    }
+    public static void outputGeoJsonFile(String fc){
+        File gj = new File(Paths.get(".").toAbsolutePath().normalize().toString() +"\\drone-"+App.day+"-"+App.month+"-"+App.year+".geojson");
+        try{
+            FileWriter writer = new FileWriter("drone-"+App.day+"-"+App.month+"-"+App.year+".geojson");
+            writer.write(fc);
+            writer.close();
+        }catch (IOException e){
+            System.err.println("IO Exception Erroe");
+            e.printStackTrace();
+        }
+
+    }
+
 }

@@ -3,6 +3,7 @@ package uk.ac.ed.inf;
 import com.mapbox.geojson.*;
 import org.jgrapht.Graph;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,22 +28,19 @@ public class App
         year = args[2];
         webServerPort = args[3];
         databasePort = args[4];
+        System.out.println("day:" + day);
+        System.out.println("month: "+ month);
+        System.out.println("year: "+ year);
+        System.out.println("webserverPort: "+webServerPort);
+        System.out.println("databasePost: "+ databasePort);
         Orders.getCoordinatesAndOrders();
         GeoJsonParser.getNoFlyZones();
         GeoJsonParser.getLandmarks();
         List<LongLat> moves = HexGraph.getRoute();
         ApacheDatabase.createDeliveriesDatabase();
         ApacheDatabase.createFlightPathDatabase(moves);
-        System.out.println(moves);
-        List<Point> pointList = new ArrayList<>();
-
-        for (LongLat move : moves) {
-            pointList.add(move.point);
-        }
-        System.out.println(pointList.size());
-        Geometry geometry = (Geometry) LineString.fromLngLats(pointList);
-        FeatureCollection fc = FeatureCollection.fromFeature(Feature.fromGeometry(geometry));
-        System.out.println(fc.toJson());
+        String fc= GeoJsonParser.movesToFCCollection(moves);
+        GeoJsonParser.outputGeoJsonFile(fc);
         ArrayList<String> OrdersCOmp = HexGraph.OrdersCompleted;
         double total = Menus.getTotalChargeForOrders(OrdersCOmp);
         double supposedAmount = Menus.getTotalChargeForOrders(Orders.orderNos);

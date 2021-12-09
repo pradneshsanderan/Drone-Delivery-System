@@ -11,7 +11,7 @@ import org.w3c.dom.Node;
 import java.util.*;
 
 public class HexGraph {
-
+    public static ArrayList<String> OrdersCompleted = new ArrayList<>();
     private static final double heightOfTriangle = Math.sqrt(Math.pow(LongLat.oneMove,2) - Math.pow(LongLat.oneMove/2,2));
     private static boolean shiftedRow(){
         double appletonLat = LongLat.appleton.latitude;
@@ -204,8 +204,8 @@ public class HexGraph {
         Graph<LongLat,NodeEdges> g = HexGraph.genValidHexGraph();
         HashMap<String,LongLat> delivery =HexGraph.getDeliveryNodes(g);
         HashMap<String,ArrayList<LongLat>> pickup = getPickUpNodes(g);
-        ArrayList<String> orders = nearestNeighbourApproach(g,pickup,delivery);
-        System.out.println(orders);
+        ArrayList<String> orders = greedyApproach(Orders.items);
+        //System.out.println(orders);
         LongLat appleton = getAppleton(g);
 
         List<LongLat> movements = new ArrayList<>();
@@ -218,33 +218,68 @@ public class HexGraph {
 //        };
 //
 //        AStarShortestPath<LongLat,NodeEdges> aStarShortestPath = new AStarShortestPath<LongLat,NodeEdges>(g,n);
-
+        int movesLeft = 1500;
         if(pickup.get(orders.get(0)).size()==1){
+            movesLeft--;
             movements = d.getPath(appleton,pickup.get(orders.get(0)).get(0)).getVertexList();
+            movesLeft--;
             movements.addAll(d.getPath(pickup.get(orders.get(0)).get(0),delivery.get(orders.get(0))).getVertexList());
+            movesLeft--;
+            int pickUpmoves =d.getPath(appleton,pickup.get(orders.get(0)).get(0)).getVertexList().size();
+            int deliverMoves = d.getPath(pickup.get(orders.get(0)).get(0),delivery.get(orders.get(0))).getVertexList().size();
+            movesLeft = movesLeft- pickUpmoves-deliverMoves;
         }
         else{
+            movesLeft--;
             movements = d.getPath(appleton,pickup.get(orders.get(0)).get(0)).getVertexList();
+            movesLeft--;
             movements.addAll(d.getPath(pickup.get(orders.get(0)).get(0),pickup.get(orders.get(0)).get(1)).getVertexList());
+            movesLeft--;
             movements.addAll(d.getPath(pickup.get(orders.get(0)).get(1),delivery.get(orders.get(0))).getVertexList());
+            movesLeft--;
+            int pickUpMoves = d.getPath(appleton,pickup.get(orders.get(0)).get(0)).getVertexList().size() + d.getPath(pickup.get(orders.get(0)).get(0),pickup.get(orders.get(0)).get(1)).getVertexList().size();
+            int deliverMoves = d.getPath(pickup.get(orders.get(0)).get(1),delivery.get(orders.get(0))).getVertexList().size();
+            movesLeft = movesLeft-pickUpMoves-deliverMoves;
         }
+        OrdersCompleted.add(orders.get(0));
+        int pointer =0;
         for(int i=1;i<orders.size();i++){
             if(pickup.get(orders.get(i)).size()==1){
-                movements.addAll(d.getPath(delivery.get(orders.get(i-1)),pickup.get(orders.get(i)).get(0)).getVertexList());
-                movements.addAll(d.getPath(pickup.get(orders.get(i)).get(0),delivery.get(orders.get(i))).getVertexList());
+                int pickUpMoves = d.getPath(delivery.get(orders.get(i-1)),pickup.get(orders.get(i)).get(0)).getVertexList().size();
+                int deliveryMove = d.getPath(pickup.get(orders.get(i)).get(0),delivery.get(orders.get(i))).getVertexList().size();
+                int returnHomeMoves = d.getPath(delivery.get(orders.get(i)),appleton).getVertexList().size();
+                int hoverMoves = 2;
+                if(movesLeft-hoverMoves-pickUpMoves-deliveryMove-returnHomeMoves>=0){
+                    movements.addAll(d.getPath(delivery.get(orders.get(i-1)),pickup.get(orders.get(i)).get(0)).getVertexList());
+                    movements.addAll(d.getPath(pickup.get(orders.get(i)).get(0),delivery.get(orders.get(i))).getVertexList());
+                    movesLeft = movesLeft-pickUpMoves-deliveryMove-hoverMoves;
+                    pointer =i;
+                    OrdersCompleted.add(orders.get(i));
+                }
+
             }
             else{
-                movements.addAll(d.getPath(delivery.get(orders.get(i-1)),pickup.get(orders.get(i)).get(0)).getVertexList());
-                movements.addAll(d.getPath(pickup.get(orders.get(i)).get(0),pickup.get(orders.get(i)).get(1)).getVertexList());
-                movements.addAll(d.getPath(pickup.get(orders.get(i)).get(1),delivery.get(orders.get(i))).getVertexList());
+                int pickUpMoves = d.getPath(delivery.get(orders.get(i-1)),pickup.get(orders.get(i)).get(0)).getVertexList().size()+d.getPath(pickup.get(orders.get(i)).get(0),pickup.get(orders.get(i)).get(1)).getVertexList().size();
+                int deliveryMove = d.getPath(pickup.get(orders.get(i)).get(1),delivery.get(orders.get(i))).getVertexList().size();
+                int returnHomeMoves = d.getPath(delivery.get(orders.get(i)),appleton).getVertexList().size();
+                int hoverMoves = 3;
+                if(movesLeft-hoverMoves-pickUpMoves-deliveryMove-returnHomeMoves>=0){
+                    movements.addAll(d.getPath(delivery.get(orders.get(i-1)),pickup.get(orders.get(i)).get(0)).getVertexList());
+                    movements.addAll(d.getPath(pickup.get(orders.get(i)).get(0),pickup.get(orders.get(i)).get(1)).getVertexList());
+                    movements.addAll(d.getPath(pickup.get(orders.get(i)).get(1),delivery.get(orders.get(i))).getVertexList());
+                    movesLeft = movesLeft-pickUpMoves-deliveryMove-hoverMoves;
+                    pointer=i;
+                    OrdersCompleted.add(orders.get(i));
+                }
+
             }
         }
-        movements.addAll(d.getPath(delivery.get(orders.get(orders.size()-1)),appleton).getVertexList());
+        movements.addAll(d.getPath(delivery.get(orders.get(pointer)),appleton).getVertexList());
         return movements;
     }
     public static ArrayList<String> nearestNeighbourApproach(Graph<LongLat,NodeEdges> g,HashMap<String,ArrayList<LongLat>> pickUpNodes,HashMap<String,LongLat> deliveryNodes){
         ArrayList<String> orders = Orders.orderNos;
-        System.out.println(orders);
+        //System.out.println(orders);
         LongLat appleton = getAppleton(g);
         if(appleton == null){
             System.out.println("Could not associate start location with a node on the map");
@@ -284,7 +319,7 @@ public class HexGraph {
             }
             sortedOrders.add(closest);
         }
-        System.out.println(Orders.orderNos);
+        //System.out.println(Orders.orderNos);
         return sortedOrders;
     }
     public static ArrayList<String> randomAppraoch(){
@@ -293,10 +328,10 @@ public class HexGraph {
         return random;
     }
     public static ArrayList<String> greedyApproach(HashMap<String,ArrayList<String>> items){
-        HashMap<Integer,String> prices = new HashMap<>();
         ArrayList<String> sortedOrders = new ArrayList<>();
         ArrayList<String> ord = Orders.orderNos;
-        Integer[] deliveryCosts = new Integer[ord.size()];
+        String[] orderArray= new String[ord.size()];
+        int[][] deliveryCosts = new int[ord.size()][2];
         Menus.getPrices();
         HashMap<String,Integer> itemPrices = Menus.prices;
         int i=0;
@@ -305,14 +340,20 @@ public class HexGraph {
             for(String item : items.get(order)){
                 total = total + itemPrices.get(item);
             }
-            prices.put(total,order);
-            deliveryCosts[i] = total;
+            deliveryCosts[i][0] = total;
+            deliveryCosts[i][1] = i;
+            orderArray[i] = order;
+            i++;
         }
-        Arrays.sort(deliveryCosts,Collections.reverseOrder());
-        for(Integer d : deliveryCosts){
-            sortedOrders.add(prices.get(d));
-            prices.remove(d);
+        Arrays.sort(deliveryCosts, Comparator.comparingDouble(o -> o[0]));
+
+
+        for(int k=deliveryCosts.length-1;k>=0;k--){
+            int ind = deliveryCosts[k][1];
+            sortedOrders.add(orderArray[ind]);
         }
+        System.out.println(sortedOrders);
+        System.out.println(Orders.orderNos);
         return sortedOrders;
     }
 }

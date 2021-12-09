@@ -114,7 +114,7 @@ public class Menus {
             //use the fromJson(String,Type) to get a list of the Menu.
             ArrayList<Menu> menuList = new Gson().fromJson(response.body(), listType);
 
-            // A hashmap to store the prices of each item.
+
             for (Menu menu : menuList) {
                 int size = menu.menu.size();
                 for (int j = 0; j < size; j++) {
@@ -134,5 +134,25 @@ public class Menus {
         }
 
 
+    }
+    public static int getTotalChargeForAnOrder(ArrayList<String> OrderNos){
+        int total =0;
+        int standardDeliveryCharge =50;
+        for(String order :OrderNos){
+            ArrayList<String> items = Orders.items.get(order);
+            total = total+standardDeliveryCharge;
+            for(String item:items){
+                total = total+ prices.get(item);
+            }
+        }
+        return total;
+    }
+    public static int getChargeForOneOrder(String order){
+        int total = 50;
+        ArrayList<String> items = Orders.items.get(order);
+        for(String item : items){
+            total = total + prices.get(item);
+        }
+        return total;
     }
 }

@@ -20,9 +20,10 @@ public class App
     public static String webServerPort;
     public static String databasePort;
 
+
     public static void main(String[] args) {
         day = args[0];
-        month= args[1];
+        month = args[1];
         year = args[2];
         webServerPort = args[3];
         databasePort = args[4];
@@ -30,16 +31,18 @@ public class App
         GeoJsonParser.getNoFlyZones();
         GeoJsonParser.getLandmarks();
         List<LongLat> moves = HexGraph.getRoute();
-        List<Point> pointList = new ArrayList<>();
 
-        for (LongLat move : moves) {
-            pointList.add(move.point);
-        }
-        System.out.println(pointList.size());
-        Geometry geometry = (Geometry) LineString.fromLngLats(pointList);
-        FeatureCollection fc = FeatureCollection.fromFeature(Feature.fromGeometry(geometry));
-        System.out.println(fc.toJson());
-        System.out.println("done");
+        System.out.println(moves.size());
+//        List<Point> pointList = new ArrayList<>();
+//
+//        for (LongLat move : moves) {
+//            pointList.add(move.point);
+//        }
+//        System.out.println(pointList.size());
+//        Geometry geometry = (Geometry) LineString.fromLngLats(pointList);
+//        FeatureCollection fc = FeatureCollection.fromFeature(Feature.fromGeometry(geometry));
+//        System.out.println(fc.toJson());
+//        System.out.println("done");
     }
 //sort drone locations by distance from each start and end
 }

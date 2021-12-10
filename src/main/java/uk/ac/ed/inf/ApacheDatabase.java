@@ -65,6 +65,9 @@ public class ApacheDatabase {
      * @param moves a list of moves taken by the drone to make the deliveries. Each move is recorded in the database
      */
     public static void createFlightPathDatabase(List<LongLat> moves){
+        if(moves==null){
+            System.err.println("Input cannot be null");
+        }
         try{
             Connection conn = DriverManager.getConnection(jdbcString);
             // Create a statement object that we can use for running various
@@ -143,6 +146,9 @@ public class ApacheDatabase {
      * @return the list of moves that have been parsed according to the FlightPath Class.
      */
     private static ArrayList<FlightPath> createFlightPathsList (List<LongLat> moves){
+        if(moves==null){
+            System.err.println("Input cannot be null");
+        }
         ArrayList<FlightPath> flightPaths = new ArrayList<>();
         //indexes which show when the drone was hovering and not moving
         ArrayList<Integer> hoverLocations = HexGraph.HoverLocation;

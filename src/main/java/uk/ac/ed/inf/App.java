@@ -21,6 +21,9 @@ public class App
         year = args[2];
         webServerPort = args[3];
         databasePort = args[4];
+        if(day ==null || month == null || year == null || webServerPort == null || databasePort == null){
+            System.err.println("Invalid Arguments detected. Please check the arguments given");
+        }
         Orders.getCoordinatesAndOrders();
         GeoJsonParser.getNoFlyZones();
         GeoJsonParser.getLandmarks();
@@ -28,10 +31,8 @@ public class App
         List<LongLat> moves = HexGraph.getRoute(drone);
         String fc =GeoJsonParser.movesToFCCollection(moves);
         GeoJsonParser.outputGeoJsonFile(fc);
-        System.out.println(moves.size());
         ApacheDatabase.createDeliveriesDatabase();
         ApacheDatabase.createFlightPathDatabase(moves);
-        System.out.println("done");
     }
 
 }

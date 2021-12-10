@@ -1,6 +1,7 @@
 package uk.ac.ed.inf;
 
 import com.mapbox.geojson.*;
+import org.w3c.dom.Node;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -15,6 +16,7 @@ import java.net.http.HttpResponse;
 import java.nio.file.Paths;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class GeoJsonParser {
@@ -127,6 +129,9 @@ public class GeoJsonParser {
      * @return a Json string which is the feature collection representing the movements made by the drone
      */
     public static String movesToFCCollection(List<LongLat> moves){
+        if(moves==null){
+            System.err.println("Input cannot be null");
+        }
         List<Point> pointList = new ArrayList<>();
         //each location in the moves list is converted to a geojson point and added to a list
         for (LongLat move : moves) {
@@ -147,8 +152,15 @@ public class GeoJsonParser {
      * @param fc the json string of the feature collection of the movements of the drone.
      */
     public static void outputGeoJsonFile(String fc){
-        //creates a new GeoJson file in the current working directory
+        if(fc == null){
+            System.err.println("Input cannot be null");
+        }
+        //creates a new GeoJson file in the current working directory(windows)
         File gj = new File(Paths.get(".").toAbsolutePath().normalize().toString() +"\\drone-"+App.day+"-"+App.month+"-"+App.year+".geojson");
+        //linux
+        if(!gj.exists()){
+            gj =new File(Paths.get(".").toAbsolutePath().normalize().toString() +"/drone-"+App.day+"-"+App.month+"-"+App.year+".geojson");
+        }
         try{
             //tries to write the json string to the file that was just created
             FileWriter writer = new FileWriter("drone-"+App.day+"-"+App.month+"-"+App.year+".geojson");
@@ -161,5 +173,6 @@ public class GeoJsonParser {
         }
 
     }
+
 
 }

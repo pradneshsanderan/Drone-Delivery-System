@@ -174,6 +174,9 @@ public class Menus {
      * @return the total cost for delivering all of those orders, including the standard delivery charge
      */
     public static int getTotalChargeForOrders(ArrayList<String> OrderNos){
+        if(OrderNos == null){
+            System.err.println("Input cannot be null");
+        }
         int total =0;
         int standardDeliveryCharge =50;
         // goes through each order
@@ -195,6 +198,9 @@ public class Menus {
      * @return the cost for delivering that order,including the standard delivery charge
      */
     public static int getChargeForOneOrder(String order){
+        if(order == null){
+            System.err.println("Input cannot be null");
+        }
         int total = 50;
         //gets the list of items in that order
         ArrayList<String> items = Orders.items.get(order);

@@ -80,6 +80,9 @@ public class LongLat {
      * @return the Pythagorean distance between the LongLat object l1 and the current point of the instance
      */
     public double distanceTo(LongLat l1){
+        if(l1==null){
+            System.err.println("Input cannot be null");
+        }
         LongLat l2 = new LongLat(longitude,latitude);
         //calculates the Pythagorean distance between the 2 points.
         return Math.sqrt(Math.pow((l1.latitude-l2.latitude),2)+Math.pow((l1.longitude-l2.longitude),2));
@@ -103,6 +106,7 @@ public class LongLat {
      * given as a parameter
      */
     public LongLat nextPosition(int angle){
+
         // the length in degrees of 1 move.
         final double dist = 0.00015;
         // if the angle is -999 then the drone is just hovering and does not move anywhere
@@ -164,6 +168,9 @@ public class LongLat {
      * @return boolean if the line made by the drones movements crosses any of the edges of the no fly zone polygons.
      */
     public boolean inNoFlyZone(LongLat nextPosition){
+        if(nextPosition==null){
+            System.err.println("Input cannot be null");
+        }
         LongLat currentPosition = new LongLat(longitude,latitude);
         List<Feature> noFlyZones = GeoJsonParser.noFlyZoneFeatures;
         //the line the drone would make as it moves to the next position
@@ -200,6 +207,9 @@ public class LongLat {
      * @return the integer value of the angle between the two positions
      */
     public int angleDirectionTo(LongLat nextNode){
+        if(nextNode==null){
+            System.err.println("Input cannot be null");
+        }
         // calculates the angle between the 2 postions
         double angleDirection = Math.toDegrees(Math.atan2((nextNode.longitude-longitude),(nextNode.latitude-latitude)));
         // if it is negative, add 360

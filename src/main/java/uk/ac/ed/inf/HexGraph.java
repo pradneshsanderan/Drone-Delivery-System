@@ -32,6 +32,7 @@ public class HexGraph {
 
 
 
+
     //.................................................................................................................
     //.................................................................................................................
     //Public Methods
@@ -46,6 +47,9 @@ public class HexGraph {
      * @return the list of positions the drone was in which correspond to its route around the map
      */
     public static List<LongLat> getRoute(Drone drone){
+        if(drone==null){
+            System.err.println("Drone cannot be null");
+        }
         // generates a graph of equilateral triangles
         Graph<LongLat,NodeEdges> g = HexGraph.genValidHexGraph();
         //gets the nodes that are closest to each delivery coordinate
@@ -186,6 +190,9 @@ public class HexGraph {
      * @return a sorted list of order numbers
      */
     public static ArrayList<String> nearestNeighbourApproach(Graph<LongLat,NodeEdges> g,HashMap<String,ArrayList<LongLat>> pickUpNodes,HashMap<String,LongLat> deliveryNodes){
+        if(g==null || pickUpNodes == null || deliveryNodes == null){
+            System.err.println("Input cannot be null. please check the inputs");
+        }
         ArrayList<String> orders = Orders.orderNos;
         Menus.getPrices();
         // gets the starting nodes coordinates
@@ -364,6 +371,9 @@ public class HexGraph {
      * @return hashset of node edges
      */
     private static HashSet<NodeEdges> genPathOnHexGraoh(ArrayList<ArrayList<LongLat>> nodesOnHexGraph){
+        if(nodesOnHexGraph == null){
+            System.err.println("Input cannot be null");
+        }
         HashSet<NodeEdges> pathOnGraph = new HashSet<>();
         //checks if the row is shifted
         boolean shifted= shiftedRow();
@@ -397,6 +407,7 @@ public class HexGraph {
             }
             shifted = !shifted;
         }
+
         return pathOnGraph;
     }
 
@@ -470,6 +481,9 @@ public class HexGraph {
      * @return a hashmap of order numbers to the delivery nodes
      */
     private static HashMap<String,LongLat> getDeliveryNodes(Graph<LongLat,NodeEdges> hexGraph){
+        if(hexGraph==null){
+            System.err.println("Input cannot be null");
+        }
         ArrayList<String> orderNos = Orders.orderNos;
         HashMap<String,double[]> deliveryCoordinates = Orders.deliveryCoordinates;
         HashMap<String,LongLat> deliveryNodes = new HashMap<>();
@@ -503,6 +517,9 @@ public class HexGraph {
      * @return a hashmap of order numbers to the list of pick up nodes
      */
     private static HashMap<String,ArrayList<LongLat>> getPickUpNodes(Graph<LongLat,NodeEdges> hexGraph){
+        if(hexGraph==null){
+            System.err.println("Input cannot be null");
+        }
         ArrayList<String> orderNos = Orders.orderNos;
         HashMap<String, ArrayList<double[]>> pickUpCoordinates= Orders.pickUpCoordinates;
         HashMap<String,ArrayList<LongLat>> pickUpNodes = new HashMap<>();
@@ -538,6 +555,10 @@ public class HexGraph {
      * @return the LongLat coordinates of the node closest to appleton tower
      */
     private static LongLat getAppleton(Graph<LongLat,NodeEdges> g){
+        if(g == null){
+            System.err.println("Input cannot be null");
+
+        }
         //searches through every node until a node close to appleton is found
         for (LongLat nodes : g.vertexSet()) {
             if (LongLat.appleton.closeTo(nodes)) {

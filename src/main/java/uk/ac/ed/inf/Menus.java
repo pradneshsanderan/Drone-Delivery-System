@@ -13,13 +13,31 @@ import java.util.HashMap;
 
 public class Menus {
 
-
+    //Public Variables
+    /**
+     * the name of the shop
+     */
     public String name;
+    /**
+     * the port that the webserver is connected to
+     */
     public String port;
-    private static final String urlString = "http://localhost:"+App.webServerPort+"/menus/menus.json";
-    //the HttpClient that is shared between all HttpRequest
-    private static final HttpClient client = HttpClient.newHttpClient();
+    /**
+     * a hashmap that stores the name and price of every item on the menu
+     */
     public static HashMap<String,Integer> prices = new HashMap<>();
+
+
+    //Private Variables
+    /**
+     * the Url String which is the Url for the menus file in the webserver
+     */
+    private static final String urlString = "http://localhost:"+App.webServerPort+"/menus/menus.json";
+    /**
+     * the HttpClient that is shared between all HttpRequest
+     */
+    private static final HttpClient client = HttpClient.newHttpClient();
+
 
 
     /**
@@ -31,7 +49,7 @@ public class Menus {
         ArrayList<uk.ac.ed.inf.Menu> menu;
     }
 
-
+    //Standard Contructor
     /**
      * the Constructor for the Menus class which accepts 2 Strings which represent the name of the machine
      * and the port where the web server is running
@@ -42,6 +60,14 @@ public class Menus {
         this.name = name;
         this.port = port;
     }
+
+
+
+    //.................................................................................................................
+    //.................................................................................................................
+    //Public Methods
+
+
 
     /**
      * A method which states the delivery cost for a valid order
@@ -60,7 +86,8 @@ public class Menus {
                     client.send(request, HttpResponse.BodyHandlers.ofString());
             //check the status code to check if the request had failed or not
             if(response.statusCode()!=200){
-                return 0;
+                System.out.println("Fatal error: Unable to connect to server at port " + App.webServerPort + ".");
+                System.exit(1); // Exit the application
             }
             Type listType = new TypeToken<ArrayList<Menu>>() {}.getType();
             //use the fromJson(String,Type) to get a list of the Menu.
@@ -95,6 +122,10 @@ public class Menus {
 
     }
 
+    /**
+     * the method gets the name and price of each item on the menu and stores it in the prices hashmap
+     *
+     */
     public static void  getPrices() {
         int standardDeliveryCharge = 50;
         try{
@@ -114,9 +145,10 @@ public class Menus {
             //use the fromJson(String,Type) to get a list of the Menu.
             ArrayList<Menu> menuList = new Gson().fromJson(response.body(), listType);
 
-
+            //goes through each menu in the menu list
             for (Menu menu : menuList) {
                 int size = menu.menu.size();
+                //goes through each item in the menu
                 for (int j = 0; j < size; j++) {
                     // the current item
                     String currItem = menu.menu.get(j).item;
@@ -135,21 +167,38 @@ public class Menus {
 
 
     }
+
+    /**
+     * the method gets the total cost for delivering all the orders that are in the list of order numbers in the argument
+     * @param OrderNos the list of order numbers
+     * @return the total cost for delivering all of those orders, including the standard delivery charge
+     */
     public static int getTotalChargeForOrders(ArrayList<String> OrderNos){
         int total =0;
         int standardDeliveryCharge =50;
+        // goes through each order
         for(String order :OrderNos){
+            // gets the list of items in that order
             ArrayList<String> items = Orders.items.get(order);
             total = total+standardDeliveryCharge;
+            // adds the price for each item ordered to the total
             for(String item:items){
                 total = total+ prices.get(item);
             }
         }
         return total;
     }
+
+    /**
+     * the method gets the total cost for delivering a single order
+     * @param order the order number that it is computing the cost for
+     * @return the cost for delivering that order,including the standard delivery charge
+     */
     public static int getChargeForOneOrder(String order){
         int total = 50;
+        //gets the list of items in that order
         ArrayList<String> items = Orders.items.get(order);
+        //adds each items price to the total
         for(String item : items){
             total = total + prices.get(item);
         }

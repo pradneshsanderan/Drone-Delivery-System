@@ -2,6 +2,9 @@ package uk.ac.ed.inf;
 
 import java.net.URL;
 
+/**
+ * the class used to parse the WhatThreeWords files from the webserver
+ */
 public class WordsDetails {
     String country;
     Square square;

@@ -1,26 +1,24 @@
 package uk.ac.ed.inf;
 
+
 public class NodeEdges {
+    /**
+     * a node on the graph
+     */
     public LongLat node1;
+    /**
+     * a node on the graph
+     */
     public LongLat node2;
 
+    /**
+     * the constructor for the nodeEdge class
+     * @param node1 the node on the graph that node2 is connected to
+     * @param node2 the node on the graph that node1 is connected to
+     */
     public NodeEdges(LongLat node1,LongLat node2){
         this.node1 = node1;
         this.node2 = node2;
     }
-    public boolean identicalNodeEdge(NodeEdges nodeEdge){
-        if(this == nodeEdge){
-            return true;
-        }
-        if(nodeEdge == null){
-            return false;
-        }
-        return nodeEdge.node1.equals(node1) && nodeEdge.node2.equals(node2) || nodeEdge.node1.equals(node2)||nodeEdge.node2.equals(node1);
-    }
-    public LongLat getTheOtherNode(LongLat node){
-        if(node.equals(node1)){
-            return node2;
-        }
-        return node1;
-    }
+
 }

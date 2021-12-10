@@ -1,29 +1,53 @@
 package uk.ac.ed.inf;
 
 import com.mapbox.geojson.Feature;
-import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.Point;
 import com.mapbox.geojson.Polygon;
-
-import java.awt.*;
-import java.awt.geom.Line2D;
-import java.util.ArrayList;
 import com.mapbox.turf.TurfJoins;
-import java.util.HashMap;
+
+import java.awt.geom.Line2D;
 import java.util.List;
 
 public class LongLat {
+    /**
+     * the longitude of the current position
+     */
     public double longitude;
+    /**
+     * the latitude of the current position
+     */
     public double latitude;
+    /**
+     * the GeoJson Point value of the current location
+     */
     public Point point;
+    /**
+     * the distance value of one move that is made by the drone in degrees
+     */
     public static double oneMove = 0.00015;
+
+
     //the coordinates of the edges of the confinement area
+    /**
+     * the longitude values of either end of the confinement area
+     */
     public static  double confAreaRight = -3.184319;
     public static  double confAreaLeft = -3.192473;
+    /**
+     * the latitude values of either end of the confinement area
+     */
     public static  double confAreaTop = 55.946233;
     public static  double confAreaBottom = 55.942617;
+
+    /**
+     * the coordinates of appleton
+     */
     public static LongLat appleton = new LongLat(-3.186874,55.944494);
 
+
+
+
+    //Standard Contructor
     /**
      * The Constructor for the LongLat class which accepts 2 double precision numbers which are the
      * longitude and latitude
@@ -35,6 +59,10 @@ public class LongLat {
         this.latitude = latitude;
         this.point = Point.fromLngLat(this.longitude,this.latitude);
     }
+
+    //.................................................................................................................
+    //.................................................................................................................
+    //Public Methods
 
     /**
      * A Method that states if the drone is within the drone confinement area.
@@ -128,40 +156,67 @@ public class LongLat {
         }
     }
 
+
+    /**
+     * the method checks if a drone is about to cross into the no fly zone. it checks if the line that its movement
+     * makes to the next position crosses any of the edges of any of the polygons of the no fly zones.
+     * @param nextPosition the longlat object of the next position that the drone will be in
+     * @return boolean if the line made by the drones movements crosses any of the edges of the no fly zone polygons.
+     */
     public boolean inNoFlyZone(LongLat nextPosition){
         LongLat currentPosition = new LongLat(longitude,latitude);
         List<Feature> noFlyZones = GeoJsonParser.noFlyZoneFeatures;
+        //the line the drone would make as it moves to the next position
         Line2D movement = new Line2D.Double(currentPosition.longitude,currentPosition.latitude,nextPosition.longitude,nextPosition.latitude);
-        for(int i =0;i<noFlyZones.size();i++){
-            if(noFlyZones.get(i).geometry()!=null){
-                Polygon polygon = (Polygon) noFlyZones.get(i).geometry();
-                if(polygon!=null){
-                    for(int j=0;j<polygon.coordinates().get(0).size()-1;j++){
-                        int nextI = j+1;
-                        List<Double> coordinates1 = polygon.coordinates().get(0).get(j).coordinates();
-                        List<Double> coordinates2 = polygon.coordinates().get(0).get(nextI).coordinates();
-                        Line2D edge = new Line2D.Double(coordinates1.get(0),coordinates1.get(1),coordinates2.get(0),coordinates2.get(1));
-                        if(movement.intersectsLine(edge)){
-                            return true;
-                        }
-                    }
+        // for each polygon that is in the no fly zone
+        for (Feature noFlyZone : noFlyZones) {
+            if (noFlyZone.geometry() != null) {
+                Polygon polygon = (Polygon) noFlyZone.geometry();
 
+                for (int j = 0; j < polygon.coordinates().get(0).size() - 1; j++) {
+                    int nextI = j + 1;
+                    List<Double> coordinates1 = polygon.coordinates().get(0).get(j).coordinates();
+                    List<Double> coordinates2 = polygon.coordinates().get(0).get(nextI).coordinates();
+                    //for each coordinate in each of the polygons, it creates a line between the current coordinate and the next and check if
+                    // the drones line crosses that line
+                    Line2D edge = new Line2D.Double(coordinates1.get(0), coordinates1.get(1), coordinates2.get(0), coordinates2.get(1));
+                    //if it does cross the line, the loop breaks and it returns true;
+                    if (movement.intersectsLine(edge)) {
+                        return true;
+                    }
                 }
 
             }
         }
+        // if all of the polygons have been checked and the loop hasnt been brokem then the drone does not cross into the no fly
+        //zone so false is returned
         return false;
     }
+
+
+    /**
+     * the method calculates the angle between the current  position of the drone and the next position of the drone
+     * @param nextNode the next position of the drone
+     * @return the integer value of the angle between the two positions
+     */
     public int angleDirectionTo(LongLat nextNode){
+        // calculates the angle between the 2 postions
         double angleDirection = Math.toDegrees(Math.atan2((nextNode.longitude-longitude),(nextNode.latitude-latitude)));
+        // if it is negative, add 360
         if(angleDirection<0){
             angleDirection = angleDirection +360;
         }
+        //returns the integer value of the angles rounded to nearest 10
         return (int) Math.round(angleDirection);
     }
-    public  boolean inNoFlyPolygon(){
-        List<Feature> zones= GeoJsonParser.noFlyZoneFeatures;
 
+    /**
+     * the method checks if the current point is in any of the no fly zone polygons
+     * @return boolean of whether the current point is in the no fly zone
+     */
+    public boolean inNoFlyPolygon(){
+        List<Feature> zones= GeoJsonParser.noFlyZoneFeatures;
+        //for each polygon, it check if the angle is in the polygon with TurfJoins
         for(Feature zone :zones){
             Polygon currzone = (Polygon) zone.geometry();
             if(currzone!=null){

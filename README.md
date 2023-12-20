@@ -61,4 +61,5 @@ nearest neighbour approach have similar results.
 <img  src="./Screenshot 2023-12-18 191915.png"/>
 Drone path on 11/11/2022
 
-
+<img  src="./Screenshot 2023-12-20 210500.png"/>
+Drone path on 12/12 /2022

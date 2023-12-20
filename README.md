@@ -53,4 +53,12 @@ algorithms. Hence, the greedy approach gave the most optimal order or orders tha
 should complete. I also tested each approach on 100 different days and plotted a scatter
 diagram to convey my results. From the diagram it is obvious that the greedy approach and
 nearest neighbour approach have similar results.
+
+<img  src="./Screenshot 2023-12-16 234120.png"/>
+
 ## Images
+
+<img  src="./Screenshot 2023-12-18 191915.png"/>
+Drone path on 11/11/2022
+
+

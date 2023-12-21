@@ -6,6 +6,7 @@ for 99% of the test data.
 ## Technology Used
  - Java
  - Apache Database
+ - GeoJSON
 ## How it works
 ### Task
 Devise and implement an algorithm to model a drone's flight path, making deliveries from synthetic test data to check if a
